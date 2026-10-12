@@ -6,21 +6,23 @@ namespace race_day_event.Database
     {//start of class
 
         // Method to log in a user
-        public string login_user(string username, string password)
+        public string login_user(string username, string password, out int userID)
         {//start of method login user
 
             // Temporary message
             string message = "Login failed...";
 
+            // Default value in case the login fails
+            userID = 0;
+
             // Connection string
             string connection_string = @"Data source=(localdb)\api_both;database=raceday;";
 
-            // Query to retrieve the stored password hash
-            string query = @" select password_hash from users where username = @username;";
+            // Query to retrieve the user id and the stored password hash
+            string query = @" select userID, password_hash from users where username = @username;";
 
             try
-            {//start of try method
-
+            {
                 // Instance for connection
                 using (SqlConnection connection = new SqlConnection(connection_string))
                 {
@@ -29,44 +31,43 @@ namespace race_day_event.Database
 
                     // Instance of SqlCommand
                     using (SqlCommand run_query = new SqlCommand(query, connection))
-                    {//start of using method 
-
+                    {
                         // Add parameters
                         run_query.Parameters.AddWithValue("@username", username);
 
-                        // Retrieve the stored password hash
-                        object result = run_query.ExecuteScalar();
+                        // Retrieve the user details
+                        using (SqlDataReader reader = run_query.ExecuteReader())
+                        {
+                            // Check whether the user exists
+                            if (reader.Read())
+                            {
+                                string stored_password_hash = reader["password_hash"].ToString();
 
-                        // Check whether the user exists
-                        if (result != null && result != DBNull.Value)
-                        {//start of if statement 
+                                // Verify the entered password
+                                bool password_correct =
+                                    BCrypt.Net.BCrypt.Verify(
+                                        password,
+                                        stored_password_hash);
 
-                            string stored_password_hash = result.ToString();
-
-                            // Verify the entered password
-                            bool password_correct = BCrypt.Net.BCrypt.Verify( password, stored_password_hash);
-
-                            // Check the password
-                            if (password_correct)
-                            {//start of if staement
-
-                                message = "Login successful...";
-                            }//end of if statement 
+                                // Check the password
+                                if (password_correct)
+                                {
+                                    userID = Convert.ToInt32(reader["userID"]);
+                                    message = "Login successful...";
+                                }
+                                else
+                                {
+                                    message = "Invalid username or password...";
+                                }
+                            }
                             else
-                            {//start of else
-
+                            {
                                 message = "Invalid username or password...";
-                            }//end of else
-                        }//end of if staement
-                        else
-                        {//start of else statement
-
-                            message = "Invalid username or password...";
-                        }//end of else statement
-                    }//end of using statement 
-                }//end of using statement 
-            }//end of try method
-
+                            }
+                        }
+                    }
+                }
+            }
             catch (SqlException error)
             {
                 message = error.Message;
@@ -77,29 +78,23 @@ namespace race_day_event.Database
             }
 
             return message;
-
-        }//end of method
+        }
 
         // Method to log out a user
         public string logout_user()
-        {//start of method logout user
-
+        {
             // Temporary message
             string message = "Logout failed...";
 
             try
-            {//start of try method
-
+            {
                 // Logout confirmation
                 message = "Logout method reached successfully...";
-
-            }//end of try method
-
+            }
             catch (Exception error)
-            {//start of catch
-
+            {
                 message = error.Message;
-            }//end of catch method
+            }
 
             return message;
         }//end of method lgout user
