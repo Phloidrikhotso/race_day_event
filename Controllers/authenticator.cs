@@ -30,16 +30,18 @@ namespace race_day_event.Controllers
             // Create an instance of the login class
             login_logout login = new login_logout();
 
-            // Variable to hold the user id
-            int userID = 0;
+            // Variables to hold the user id and the role
+            int user_id = 0;
+            string role_name = "";
 
             // Call the database method
-            string message = login.login_user(username, password, out userID);
+            string message = login.login_user(username, password, out user_id, out role_name);
 
             // Start the session if the login worked
-            if (userID != 0)
+            if (user_id != 0)
             {
-                HttpContext.Session.SetInt32("userID", userID);
+                HttpContext.Session.SetInt32("userID", user_id);
+                HttpContext.Session.SetString("role", role_name);
             }
 
             return message;

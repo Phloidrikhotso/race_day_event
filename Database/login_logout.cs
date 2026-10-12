@@ -6,20 +6,22 @@ namespace race_day_event.Database
     {//start of class
 
         // Method to log in a user
-        public string login_user(string username, string password, out int userID)
-        {//start of method login user
-
+        public string login_user(string username, string password, out int user_id, out string role_name)
+        {
             // Temporary message
             string message = "Login failed...";
 
-            // Default value in case the login fails
-            userID = 0;
+            // Default values in case the login fails
+            user_id = 0;
+            role_name = "";
 
             // Connection string
             string connection_string = @"Data source=(localdb)\api_both;database=raceday;";
 
-            // Query to retrieve the user id and the stored password hash
-            string query = @" select userID, password_hash from users where username = @username;";
+            // Query to retrieve the user id, the role and the stored password hash
+            string query = @" select u.userID, u.password_hash, r.role_name
+                from users u inner join roles r on u.role_id = r.role_id
+                where u.username = @username;";
 
             try
             {
@@ -52,7 +54,8 @@ namespace race_day_event.Database
                                 // Check the password
                                 if (password_correct)
                                 {
-                                    userID = Convert.ToInt32(reader["userID"]);
+                                    user_id = Convert.ToInt32(reader["userID"]);
+                                    role_name = reader["role_name"].ToString();
                                     message = "Login successful...";
                                 }
                                 else
