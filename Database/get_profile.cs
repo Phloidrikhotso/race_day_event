@@ -6,7 +6,7 @@ namespace race_day_event.Database
     {//start of class
 
         // Method to retrieve the logged in user's profile
-        public string get_user_profile(int userID)
+        public string get_user_profile(int user_id)
         {
             // Temporary message
             string message = "User not found...";
@@ -29,7 +29,7 @@ namespace race_day_event.Database
                     using (SqlCommand run_query = new SqlCommand(query, connection))
                     {
                         // Add parameters
-                        run_query.Parameters.AddWithValue("@userID", userID);
+                        run_query.Parameters.AddWithValue("@userID", user_id);
 
                         // Execute the query
                         using (SqlDataReader reader = run_query.ExecuteReader())
