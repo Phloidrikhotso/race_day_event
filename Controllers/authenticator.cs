@@ -14,14 +14,15 @@ namespace race_day_event.Controllers
         [HttpPost("register")]
         public string register_user(string role_name, string first_name, string last_name,
             string username, string email, string phone_number, string password)
-        {
-            register_user register =
-                new register_user();
+        {//start of method register user
+
+            register_user register = new register_user();
 
             string message = register.add_user(role_name, first_name, last_name, username, email, phone_number, password);
 
             return message;
-        }
+
+        }//end of method register user
 
         // POST: api/authenticator/login
         [HttpPost("login")]
