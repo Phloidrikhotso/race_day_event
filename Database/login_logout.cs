@@ -6,7 +6,7 @@ namespace race_day_event.Database
     {//start of class
 
         // Method to log in a user
-        public string login_user(string username, string password, out int user_id, out string role_name)
+        public string login_user(string email, string password, out int user_id, out string role_name)
         {
             // Temporary message
             string message = "Login failed...";
@@ -21,7 +21,7 @@ namespace race_day_event.Database
             // Query to retrieve the user id, the role and the stored password hash
             string query = @" select u.userID, u.password_hash, r.role_name
                 from users u inner join roles r on u.role_id = r.role_id
-                where u.username = @username;";
+                where u.email = @email;";
 
             try
             {
@@ -35,7 +35,7 @@ namespace race_day_event.Database
                     using (SqlCommand run_query = new SqlCommand(query, connection))
                     {
                         // Add parameters
-                        run_query.Parameters.AddWithValue("@username", username);
+                        run_query.Parameters.AddWithValue("@email", email);
 
                         // Retrieve the user details
                         using (SqlDataReader reader = run_query.ExecuteReader())
@@ -60,12 +60,12 @@ namespace race_day_event.Database
                                 }
                                 else
                                 {
-                                    message = "Invalid username or password...";
+                                    message = "Invalid email or password...";
                                 }
                             }
                             else
                             {
-                                message = "Invalid username or password...";
+                                message = "Invalid email or password...";
                             }
                         }
                     }
@@ -100,7 +100,8 @@ namespace race_day_event.Database
             }
 
             return message;
-        }//end of method lgout user
+        }
+
 
     }//end of class
 }//end of namespace
