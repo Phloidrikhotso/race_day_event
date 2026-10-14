@@ -1,13 +1,34 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using race_day_event.Database;
+using System.Text.Json.Serialization;
 
 namespace race_day_event.Controllers
-{
+{//start of namespace
     [Route("api/[controller]")]
     [ApiController]
     public class events : ControllerBase
-    {
+    {//start of class
+
+        // The race types an organizer can choose (shows as a dropdown in Swagger)
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public enum event_type_choice
+        {
+            Run,
+            Walk,
+            Cycle
+        }
+
+        // The statuses an event can have (shows as a dropdown in Swagger)
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public enum event_status_choice
+        {
+            Planned,
+            Open,
+            Closed,
+            Cancelled,
+            Completed
+        }
 
         // GET: api/events
         [HttpGet]
@@ -44,7 +65,8 @@ namespace race_day_event.Controllers
         // POST: api/events
         [HttpPost]
         public string create_event(string event_name, string event_description, DateTime event_date,
-            string event_location, decimal distance, string event_type, string event_status = "Planned")
+            string event_location, decimal distance, event_type_choice event_type,
+            event_status_choice event_status = event_status_choice.Planned)
         {
             // Get the logged in user from the session
             int? user_id = HttpContext.Session.GetInt32("userID");
@@ -65,10 +87,10 @@ namespace race_day_event.Controllers
             }
 
             // Validate the fields
-            if (!is_event_valid(event_name, event_location, distance, event_type, event_status))
+            if (!is_event_valid(event_name, event_location, distance, event_type.ToString(), event_status.ToString()))
             {
                 Response.StatusCode = 400;
-                return "Validation failed: check the name, location, distance (above 0), type (Run, Walk, Cycle) and status (Planned, Open, Closed, Cancelled, Completed)...";
+                return "Validation failed: check the name, location and distance (above 0)...";
             }
 
             // Create an instance of the events class
@@ -76,7 +98,7 @@ namespace race_day_event.Controllers
 
             // Call the database method
             string message = event_manager.add_event(user_id.Value, event_name, event_description, event_date,
-                event_location, distance, event_type, event_status);
+                event_location, distance, event_type.ToString(), event_status.ToString());
 
             // Check whether the event was created
             if (message == "Event created successfully...")
@@ -90,7 +112,8 @@ namespace race_day_event.Controllers
         // PUT: api/events/300000
         [HttpPut("{event_id}")]
         public string update_event(int event_id, string event_name, string event_description, DateTime event_date,
-            string event_location, decimal distance, string event_type, string event_status = "Planned")
+            string event_location, decimal distance, event_type_choice event_type,
+            event_status_choice event_status = event_status_choice.Planned)
         {
             // Get the logged in user from the session
             int? user_id = HttpContext.Session.GetInt32("userID");
@@ -111,10 +134,10 @@ namespace race_day_event.Controllers
             }
 
             // Validate the fields
-            if (!is_event_valid(event_name, event_location, distance, event_type, event_status))
+            if (!is_event_valid(event_name, event_location, distance, event_type.ToString(), event_status.ToString()))
             {
                 Response.StatusCode = 400;
-                return "Validation failed: check the name, location, distance (above 0), type (Run, Walk, Cycle) and status (Planned, Open, Closed, Cancelled, Completed)...";
+                return "Validation failed: check the name, location and distance (above 0)...";
             }
 
             // Create an instance of the events class
@@ -122,7 +145,7 @@ namespace race_day_event.Controllers
 
             // Call the database method
             string message = event_manager.update_event(event_id, user_id.Value, event_name, event_description,
-                event_date, event_location, distance, event_type, event_status);
+                event_date, event_location, distance, event_type.ToString(), event_status.ToString());
 
             // Set the status code
             if (message == "Event not found...")
@@ -208,6 +231,7 @@ namespace race_day_event.Controllers
 
             return true;
         }
+
 
     }
 }

@@ -187,7 +187,7 @@ namespace race_day_event.Database
             // Query to find the owner of the event
             string owner_query = @" select organizer_id from event where event_id = @event_id;";
 
-            // query to store in the event table
+            // Query
             string query = @" update event set event_name = @event_name, event_description = @event_description,
                 event_date = @event_date, event_location = @event_location, distance = @distance,
                 event_type = @event_type, event_status = @event_status
