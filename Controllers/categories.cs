@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using race_day_event.Database;
+using System.Text.Json.Serialization;
 
 namespace race_day_event.Controllers
 {
@@ -8,6 +9,15 @@ namespace race_day_event.Controllers
     [ApiController]
     public class categories : ControllerBase
     {
+
+        // The category names an organizer can choose (shows as a dropdown in Swagger)
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public enum category_name_choice
+        {
+            Run,
+            Walk,
+            Cycle
+        }
 
         // GET: api/events/300000/categories
         [HttpGet("~/api/events/{event_id}/categories")]
@@ -30,7 +40,7 @@ namespace race_day_event.Controllers
 
         // POST: api/events/300000/categories
         [HttpPost("~/api/events/{event_id}/categories")]
-        public string create_category(int event_id, string category_name, decimal entry_fee = 0,
+        public string create_category(int event_id, category_name_choice category_name, decimal entry_fee = 0,
             decimal? race_distance = null, int max_participants = 500)
         {
             // Get the logged in user from the session
@@ -52,17 +62,17 @@ namespace race_day_event.Controllers
             }
 
             // Validate the fields
-            if (!is_category_valid(category_name, entry_fee, race_distance, max_participants))
+            if (!is_category_valid(category_name.ToString(), entry_fee, race_distance, max_participants))
             {
                 Response.StatusCode = 400;
-                return "Validation failed: check the name, entry fee (0 or more), race distance (blank or above 0) and max participants (above 0)...";
+                return "Validation failed: check the entry fee (0 or more), race distance (blank or above 0) and max participants (above 0)...";
             }
 
             // Create an instance of the categories class
             manage_categories category_manager = new manage_categories();
 
             // Call the database method
-            string message = category_manager.add_category(event_id, user_id.Value, category_name,
+            string message = category_manager.add_category(event_id, user_id.Value, category_name.ToString(),
                 entry_fee, race_distance, max_participants);
 
             // Set the status code
@@ -84,7 +94,7 @@ namespace race_day_event.Controllers
 
         // PUT: api/categories/400000
         [HttpPut("{category_id}")]
-        public string update_category(int category_id, string category_name, decimal entry_fee = 0,
+        public string update_category(int category_id, category_name_choice category_name, decimal entry_fee = 0,
             decimal? race_distance = null, int max_participants = 500)
         {
             // Get the logged in user from the session
@@ -106,17 +116,17 @@ namespace race_day_event.Controllers
             }
 
             // Validate the fields
-            if (!is_category_valid(category_name, entry_fee, race_distance, max_participants))
+            if (!is_category_valid(category_name.ToString(), entry_fee, race_distance, max_participants))
             {
                 Response.StatusCode = 400;
-                return "Validation failed: check the name, entry fee (0 or more), race distance (blank or above 0) and max participants (above 0)...";
+                return "Validation failed: check the entry fee (0 or more), race distance (blank or above 0) and max participants (above 0)...";
             }
 
             // Create an instance of the categories class
             manage_categories category_manager = new manage_categories();
 
             // Call the database method
-            string message = category_manager.update_category(category_id, user_id.Value, category_name,
+            string message = category_manager.update_category(category_id, user_id.Value, category_name.ToString(),
                 entry_fee, race_distance, max_participants);
 
             // Set the status code
