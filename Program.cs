@@ -1,4 +1,3 @@
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -23,7 +22,17 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options =>
+    {
+        // Title shown on the browser tab
+        options.DocumentTitle = "RaceDay API";
+
+        // Hide the Schemas section at the bottom of the page
+        options.DefaultModelsExpandDepth(-1);
+
+        // Also hide it with a style rule, in case the setting above is ignored
+        options.HeadContent = "<style>.swagger-ui section.models { display: none; }</style>";
+    });
 }
 
 app.UseHttpsRedirection();
