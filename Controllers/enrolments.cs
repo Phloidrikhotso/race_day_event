@@ -1,18 +1,21 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using race_day_event.Controllers;
 using race_day_event.Database;
+using System.Text.Json.Serialization;
 
 namespace race_day_event.Controllers
-{
+{//start of namespace
     [Route("api/[controller]")]
     [ApiController]
     public class enrolments : ControllerBase
-    {
+    {//start of class
 
         // POST: api/events/300000/enrolments
         [HttpPost("~/api/events/{event_id}/enrolments")]
         public string enrol_in_event(int event_id, int category_id)
-        {
+        {//start of enrol in event method
+
             // Get the logged in user from the session
             int? user_id = HttpContext.Session.GetInt32("userID");
             string role = HttpContext.Session.GetString("role");
@@ -56,12 +59,13 @@ namespace race_day_event.Controllers
             }
 
             return message;
-        }
+        }//end of enrol in event method
 
         // GET: api/enrolments/me
         [HttpGet("me")]
         public string get_my_enrolments()
-        {
+        {//start ofget my enrolments
+
             // Get the logged in user from the session
             int? user_id = HttpContext.Session.GetInt32("userID");
             string role = HttpContext.Session.GetString("role");
@@ -87,12 +91,13 @@ namespace race_day_event.Controllers
             string message = enrolment_manager.get_my_enrolments(user_id.Value);
 
             return message;
-        }
+        }//end of get my enrolments
 
         // GET: api/events/300000/enrolments
         [HttpGet("~/api/events/{event_id}/enrolments")]
         public string get_event_enrolments(int event_id)
-        {
+        {//start of get event enrolments
+
             // Get the logged in user from the session
             int? user_id = HttpContext.Session.GetInt32("userID");
             string role = HttpContext.Session.GetString("role");
@@ -128,12 +133,13 @@ namespace race_day_event.Controllers
             }
 
             return message;
-        }
+        }//end of get event enrolments
 
         // DELETE: api/enrolments/500000
         [HttpDelete("{enrolment_id}")]
-        public IActionResult cancel_enrolment(int enrolment_id)
-        {
+        public string cancel_enrolment(int enrolment_id)
+        {//start of cancel enrolments
+
             // Get the logged in user from the session
             int? user_id = HttpContext.Session.GetInt32("userID");
             string role = HttpContext.Session.GetString("role");
@@ -141,13 +147,15 @@ namespace race_day_event.Controllers
             // Check whether a session is active
             if (user_id == null)
             {
-                return Unauthorized("No active session...");
+                Response.StatusCode = 401;
+                return "No active session...";
             }
 
             // Check the role
             if (role != "Participant")
             {
-                return StatusCode(403, "Forbidden: only participants can cancel their enrolments...");
+                Response.StatusCode = 403;
+                return "Forbidden: only participants can cancel their enrolments...";
             }
 
             // Create an instance of the enrolments class
@@ -156,27 +164,26 @@ namespace race_day_event.Controllers
             // Call the database method
             string message = enrolment_manager.cancel_enrolment(enrolment_id, user_id.Value);
 
-            // Set the response based on the message
-            if (message == "Enrolment cancelled successfully...")
+            // Set the status code
+            if (message == "Enrolment not found...")
             {
-                return NoContent();
-            }
-            else if (message == "Enrolment not found...")
-            {
-                return NotFound(message);
+                Response.StatusCode = 404;
             }
             else if (message.StartsWith("Forbidden"))
             {
-                return StatusCode(403, message);
+                Response.StatusCode = 403;
             }
             else if (message.StartsWith("Conflict"))
             {
-                return Conflict(message);
+                Response.StatusCode = 409;
+            }
+            else if (message != "Enrolment cancelled successfully...")
+            {
+                Response.StatusCode = 400;
             }
 
-            return BadRequest(message);
-        }
+            return message;
+        }//end of cancel enrolments
 
-
-    }
-}
+    }//end of class
+}//end of namespace
