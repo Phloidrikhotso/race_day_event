@@ -15,28 +15,29 @@ namespace race_day_event.Controllers
         // The roles a user can choose when registering (shows as a dropdown in Swagger)
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public enum role_choice
-        {
+        {//start of role choice
             Organizer,
             Participant
-        }
+        }//end of role choice
 
 
         [HttpPost("register")]
         public string register_user(role_choice role_name, string first_name, string last_name,
             string username, string email, string phone_number, string password)
-        {
-            register_user register =
-                new register_user();
+        {//start of register user method
+
+            register_user register = new register_user();
 
             string message = register.add_user(role_name.ToString(), first_name, last_name, username, email, phone_number, password);
 
             return message;
-        }
+        }//end of register user method
 
         // POST: api/authenticator/login
         [HttpPost("login")]
         public string login_user(string email, string password)
-        {
+        {//start of login user method
+
             // Create an instance of the login class
             login_logout login = new login_logout();
 
@@ -55,12 +56,13 @@ namespace race_day_event.Controllers
             }
 
             return message;
-        }
+        }//end of login user method
 
         // POST: api/authenticator/logout
         [HttpPost("logout")]
         public string logout_user()
-        {
+        {//start of logout user method
+
             // Create an instance of the logout class
             login_logout logout = new login_logout();
 
@@ -71,7 +73,7 @@ namespace race_day_event.Controllers
             HttpContext.Session.Clear();
 
             return message;
-        }
+        }//end of logout user method
 
 
     }//end of class

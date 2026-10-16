@@ -7,7 +7,8 @@ namespace race_day_event.Database
 
         // Method to log in a user
         public string login_user(string email, string password, out int user_id, out string role_name)
-        {
+        {//start of login user method
+
             // Temporary message
             string message = "Login failed...";
 
@@ -27,7 +28,8 @@ namespace race_day_event.Database
             {
                 // Instance for connection
                 using (SqlConnection connection = new SqlConnection(connection_string))
-                {
+                {//start of using
+
                     // Open the connection
                     connection.Open();
 
@@ -68,39 +70,43 @@ namespace race_day_event.Database
                                 message = "Invalid email or password...";
                             }
                         }
-                    }
-                }
-            }
+                    }//end of using run query
+                }//end of using 
+            }//end of try
             catch (SqlException error)
-            {
+            {//start of catch
                 message = error.Message;
-            }
+            }//end of catch
             catch (Exception error)
-            {
+            {//start of catch
                 message = error.Message;
-            }
+            }//end of catch
 
             return message;
-        }
+        }//end of login user method
 
         // Method to log out a user
         public string logout_user()
-        {
+        {//start of logout user method
+
             // Temporary message
             string message = "Logout failed...";
 
             try
-            {
+            {//start of try 
+
                 // Logout confirmation
                 message = "Logout method reached successfully...";
-            }
+
+            }//end of try
             catch (Exception error)
-            {
+            {//start of catch
+
                 message = error.Message;
-            }
+            }//end of catch
 
             return message;
-        }
+        }//end of logout user method
 
 
     }//end of class
