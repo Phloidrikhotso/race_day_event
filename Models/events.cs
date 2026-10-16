@@ -1,7 +1,7 @@
 ﻿namespace race_day_event.Models
-{
+{//start of namespace
     public class events
-    {
+    {//start of class
 
         public int event_id { get; set; }
 
@@ -23,5 +23,5 @@
 
         public DateTime? date_created { get; set; }
 
-    }
-}
+    }//end of class
+}//end of namespace
