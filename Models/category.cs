@@ -1,7 +1,7 @@
 ﻿namespace race_day_event.Models
-{
+{//start of namespace
     public class category
-    {
+    {//start of class
 
         public int category_id { get; set; }
 
@@ -15,5 +15,5 @@
 
         public int max_participants { get; set; } = 500;
 
-    }
-}
+    }//end of class
+}//end of namespace
