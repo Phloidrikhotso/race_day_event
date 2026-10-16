@@ -13,27 +13,28 @@ namespace race_day_event.Controllers
         // The race types an organizer can choose (shows as a dropdown in Swagger)
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public enum event_type_choice
-        {
+        {//start of event type choice
             Run,
             Walk,
             Cycle
-        }
+        }//end of event type choice
 
         // The statuses an event can have (shows as a dropdown in Swagger)
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public enum event_status_choice
-        {
+        {//start of event status choice
             Planned,
             Open,
             Closed,
             Cancelled,
             Completed
-        }
+        }//end of event status choice
 
         // GET: api/events
         [HttpGet]
         public string get_events()
-        {
+        {//start of get events
+
             // Create an instance of the events class
             manage_events event_manager = new manage_events();
 
@@ -41,12 +42,45 @@ namespace race_day_event.Controllers
             string message = event_manager.get_all_events();
 
             return message;
-        }
+        }//end of get events
+
+        // GET: api/events/mine
+        [HttpGet("mine")]
+        public string get_my_events()
+        {//start of get my events
+
+            // Get the logged in user from the session
+            int? user_id = HttpContext.Session.GetInt32("userID");
+            string role = HttpContext.Session.GetString("role");
+
+            // Check whether a session is active
+            if (user_id == null)
+            {
+                Response.StatusCode = 401;
+                return "No active session...";
+            }
+
+            // Check the role
+            if (role != "Organizer")
+            {
+                Response.StatusCode = 403;
+                return "Forbidden: only organizers have events of their own...";
+            }
+
+            // Create an instance of the events class
+            manage_events event_manager = new manage_events();
+
+            // Call the database method
+            string message = event_manager.get_my_events(user_id.Value);
+
+            return message;
+        }//end of get my events
 
         // GET: api/events/300000
         [HttpGet("{event_id}")]
         public string get_event(int event_id)
-        {
+        {//start of get event
+
             // Create an instance of the events class
             manage_events event_manager = new manage_events();
 
@@ -60,14 +94,15 @@ namespace race_day_event.Controllers
             }
 
             return message;
-        }
+        }//end of get events
 
         // POST: api/events
         [HttpPost]
         public string create_event(string event_name, string event_description, DateTime event_date,
             string event_location, decimal distance, event_type_choice event_type,
             event_status_choice event_status = event_status_choice.Planned)
-        {
+        {//start of create event
+
             // Get the logged in user from the session
             int? user_id = HttpContext.Session.GetInt32("userID");
             string role = HttpContext.Session.GetString("role");
@@ -107,14 +142,15 @@ namespace race_day_event.Controllers
             }
 
             return message;
-        }
+        }//end of create event
 
         // PUT: api/events/300000
         [HttpPut("{event_id}")]
         public string update_event(int event_id, string event_name, string event_description, DateTime event_date,
             string event_location, decimal distance, event_type_choice event_type,
             event_status_choice event_status = event_status_choice.Planned)
-        {
+        {//start of update event
+
             // Get the logged in user from the session
             int? user_id = HttpContext.Session.GetInt32("userID");
             string role = HttpContext.Session.GetString("role");
@@ -158,12 +194,13 @@ namespace race_day_event.Controllers
             }
 
             return message;
-        }
+        }//end of update
 
         // DELETE: api/events/300000
         [HttpDelete("{event_id}")]
-        public IActionResult delete_event(int event_id)
-        {
+        public string delete_event(int event_id)
+        {//start of delete event
+
             // Get the logged in user from the session
             int? user_id = HttpContext.Session.GetInt32("userID");
             string role = HttpContext.Session.GetString("role");
@@ -171,13 +208,15 @@ namespace race_day_event.Controllers
             // Check whether a session is active
             if (user_id == null)
             {
-                return Unauthorized("No active session...");
+                Response.StatusCode = 401;
+                return "No active session...";
             }
 
             // Check the role
             if (role != "Organizer")
             {
-                return StatusCode(403, "Forbidden: only organizers can delete events...");
+                Response.StatusCode = 403;
+                return "Forbidden: only organizers can delete events...";
             }
 
             // Create an instance of the events class
@@ -186,31 +225,32 @@ namespace race_day_event.Controllers
             // Call the database method
             string message = event_manager.delete_event(event_id, user_id.Value);
 
-            // Set the response based on the message
-            if (message == "Event deleted successfully...")
+            // Set the status code
+            if (message == "Event not found...")
             {
-                return NoContent();
-            }
-            else if (message == "Event not found...")
-            {
-                return NotFound(message);
+                Response.StatusCode = 404;
             }
             else if (message.StartsWith("Forbidden"))
             {
-                return StatusCode(403, message);
+                Response.StatusCode = 403;
             }
             else if (message.StartsWith("Cannot delete"))
             {
-                return Conflict(message);
+                Response.StatusCode = 409;
+            }
+            else if (message != "Event deleted successfully...")
+            {
+                Response.StatusCode = 400;
             }
 
-            return BadRequest(message);
-        }
+            return message;
+        }//end of delete event
 
         // Method to validate the event fields
         private bool is_event_valid(string event_name, string event_location, decimal distance,
             string event_type, string event_status)
-        {
+        {//start of is event valid
+
             string[] valid_types = { "Run", "Walk", "Cycle" };
             string[] valid_statuses = { "Planned", "Open", "Closed", "Cancelled", "Completed" };
 
@@ -230,8 +270,8 @@ namespace race_day_event.Controllers
             }
 
             return true;
-        }
+        }//end of is event valid
 
 
-    }
-}
+    }//end of class
+}//end of namespace
