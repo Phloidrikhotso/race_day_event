@@ -1,1 +1,46 @@
+name: CI
 
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      # Both SDKs are installed so the test project builds whichever version it targets
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+
+      - name: Restore packages
+        run: |
+          dotnet restore race_day_event.csproj
+          dotnet restore TestProject1/TestProject1.csproj
+
+      - name: Build the API
+        run: dotnet build race_day_event.csproj --configuration Release --no-restore
+
+      - name: Run the unit tests
+        run: dotnet test TestProject1/TestProject1.csproj --configuration Release --no-restore --logger "console;verbosity=normal"
+
+      - name: Publish the API
+        run: dotnet publish race_day_event.csproj --configuration Release --no-build --output ./publish
+
+      - name: Save the published API
+        uses: actions/upload-artifact@v4
+        with:
+          name: race-day-api
+          path: ./publish
