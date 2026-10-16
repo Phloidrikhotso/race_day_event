@@ -1,9 +1,9 @@
 ﻿using System.Data.SqlClient;
 
 namespace race_day_event.Database
-{
+{//start of namespace
     public class manage_results
-    {
+    {//start of class
 
         // Connection string (used by all the methods in this class)
         private string connection_string = @"Data source=(localdb)\api_both;database=raceday;";
@@ -11,7 +11,8 @@ namespace race_day_event.Database
         // Method to capture the result of an enrolment for the owning organizer
         public string add_result(int enrolment_id, int organizer_id, TimeSpan? finish_time,
             int? overall_position, int? category_position, string results_status)
-        {
+        {//start of method add result
+
             // Temporary message
             string message = "Result capture failed...";
 
@@ -28,9 +29,12 @@ namespace race_day_event.Database
                 values (@enrolment_id, @finish_time, @overall_position, @category_position, @results_status);";
 
             try
-            {
+            {//start of try method
+
                 using (SqlConnection connection = new SqlConnection(connection_string))
-                {
+                {//start of uing method
+
+                    //open connection
                     connection.Open();
 
                     // Check that the enrolment exists and who owns the event
@@ -39,34 +43,42 @@ namespace race_day_event.Database
                     bool found = false;
 
                     using (SqlCommand check_owner = new SqlCommand(owner_query, connection))
-                    {
+                    {//start of using check owner
+
                         check_owner.Parameters.AddWithValue("@enrolment_id", enrolment_id);
 
                         using (SqlDataReader reader = check_owner.ExecuteReader())
-                        {
+                        {//start of using
+
                             if (reader.Read())
                             {
                                 found = true;
                                 owner_id = Convert.ToInt32(reader["organizer_id"]);
                                 status = reader["enrolment_status"].ToString();
                             }
-                        }
-                    }
+                        }//end of using 
+                    }//end of using check owner
 
                     if (!found)
-                    {
+                    {//start of if found 
+
+                        //return message to the user
                         return "Enrolment not found...";
-                    }
+
+                    }//end of if found
 
                     if (owner_id != organizer_id)
-                    {
+                    {//start of if 
+
+                        //return message 
                         return "Forbidden: you are not the owning organizer...";
-                    }
+                    }//end of if 
 
                     if (status == "Cancelled")
-                    {
+                    {//start of if status
+
                         return "Conflict: a cancelled enrolment cannot have a result...";
-                    }
+                    }//end of if status
 
                     // Check whether a result already exists
                     int result_count = 0;
@@ -109,9 +121,10 @@ namespace race_day_event.Database
                         }
                     }
                 }
-            }
+            }//end of try method
             catch (SqlException error)
-            {
+            {//start of catch method
+
                 // 2627 and 2601 are unique key errors (a result already exists)
                 if (error.Number == 2627 || error.Number == 2601)
                 {
@@ -121,19 +134,22 @@ namespace race_day_event.Database
                 {
                     message = error.Message;
                 }
-            }
+            }//end of catch method
             catch (Exception error)
-            {
+            {//start of catch method
+
                 message = error.Message;
-            }
+
+            }//end of catch method
 
             return message;
-        }
+        }//end of add result
 
         // Method to update a captured result for the owning organizer
         public string update_result(int enrolment_id, int organizer_id, TimeSpan? finish_time,
             int? overall_position, int? category_position, string results_status)
-        {
+        {//start of update result method
+
             // Temporary message
             string message = "Result update failed...";
 
@@ -147,10 +163,13 @@ namespace race_day_event.Database
                 category_position = @category_position, results_status = @results_status
                 where enrolment_id = @enrolment_id;";
 
+            //try and catch method
             try
-            {
+            {//start of try method
                 using (SqlConnection connection = new SqlConnection(connection_string))
-                {
+                {//start of using method
+
+                    //open connection 
                     connection.Open();
 
                     // Check that the enrolment exists and who owns the event
@@ -164,17 +183,23 @@ namespace race_day_event.Database
                     }
 
                     if (owner == null)
-                    {
+                    {//start of if null
+
                         message = "Enrolment not found...";
-                    }
+
+                    }//end of if null
+
                     else if (Convert.ToInt32(owner) != organizer_id)
-                    {
+                    {//start of else if
+
                         message = "Forbidden: you are not the owning organizer...";
-                    }
+
+                    }//end of else if
                     else
-                    {
+                    {//start of else using 
                         using (SqlCommand run_query = new SqlCommand(query, connection))
-                        {
+                        {//start of using run query
+
                             // Add parameters
                             run_query.Parameters.AddWithValue("@enrolment_id", enrolment_id);
 
@@ -200,25 +225,28 @@ namespace race_day_event.Database
                             {
                                 message = "Result not found...";
                             }
-                        }
-                    }
-                }
-            }
+                        }//end of using run query
+
+                    }//end of else method
+                }//endof using method
+            }//end of try method
             catch (SqlException error)
-            {
+            {//start of catch  SqlException
                 message = error.Message;
-            }
+            }//end of catch  SqlException
             catch (Exception error)
-            {
+            {//start of catch exception
+
                 message = error.Message;
-            }
+            }//end of catch exception 
 
             return message;
-        }
+        }//end of update result method
 
         // Method to list the logged in participant's results
         public string get_my_results(int user_id)
-        {
+        {//start of get my results method
+
             // Temporary message
             string message = "";
 
@@ -232,13 +260,16 @@ namespace race_day_event.Database
                 where en.userID = @userID order by e.event_date desc;";
 
             try
-            {
+            {//start of try method 
                 using (SqlConnection connection = new SqlConnection(connection_string))
-                {
+                {//start of using connection
+
+                    //open connection
                     connection.Open();
 
                     using (SqlCommand run_query = new SqlCommand(query, connection))
-                    {
+                    {//start of using run query
+
                         // Add parameters
                         run_query.Parameters.AddWithValue("@userID", user_id);
 
@@ -256,32 +287,38 @@ namespace race_day_event.Database
                                     + reader["category_position"].ToString() + " - "
                                     + reader["results_status"].ToString()
                                     + Environment.NewLine;
-                            }
-                        }
-                    }
-                }
+                            }//end of while
+                        }//end of using 
+                    }//end of using run query
+                }//end of using connection
 
                 // Check whether any results were found
                 if (message == "")
                 {
                     message = "No results found...";
                 }
-            }
+            }//end of try 
             catch (SqlException error)
-            {
-                message = error.Message;
-            }
-            catch (Exception error)
-            {
-                message = error.Message;
-            }
+            {//start of catch SqlException
 
+                message = error.Message;
+
+            }//start of catch SqlException
+            catch (Exception error)
+            {//start of exception 
+
+                message = error.Message;
+            }//end of exception
+
+            //return the message to the user
             return message;
-        }
+
+        }//end of get my results method
 
         // Method to list the results of an event owned by the organizer
         public string get_event_results(int event_id, int organizer_id)
-        {
+        {//start of get event results
+
             // Temporary message
             string message = "";
 
@@ -299,9 +336,11 @@ namespace race_day_event.Database
                 order by case when r.overall_position is null then 1 else 0 end, r.overall_position;";
 
             try
-            {
+            {//start of try 
                 using (SqlConnection connection = new SqlConnection(connection_string))
-                {
+                {//start of using connection
+
+                    //open connection
                     connection.Open();
 
                     // Check that the event exists and who owns it
@@ -343,28 +382,31 @@ namespace race_day_event.Database
                                     + reader["category_position"].ToString() + " - "
                                     + reader["results_status"].ToString()
                                     + Environment.NewLine;
-                            }
-                        }
-                    }
+                            }//end of while
+                        }//end of using run query
+                    }//end of using connection
 
                     // Check whether any results were found
                     if (message == "")
                     {
                         message = "No results found for this event...";
                     }
-                }
-            }
+                }//end of using
+            }//end of try
             catch (SqlException error)
-            {
+            {//start of catch
+
                 message = error.Message;
-            }
+            }//end of catch
             catch (Exception error)
-            {
+            {//start of catch exception
+
                 message = error.Message;
-            }
+
+            }//end of exception
 
             return message;
-        }
+        }//end of get event results
 
-    }
-}
+    }//end of class
+}//end of namespace

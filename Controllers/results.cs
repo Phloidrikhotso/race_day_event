@@ -3,17 +3,18 @@ using Microsoft.AspNetCore.Mvc;
 using race_day_event.Database;
 
 namespace race_day_event.Controllers
-{
+{//start of namespace
     [Route("api/[controller]")]
     [ApiController]
     public class results : ControllerBase
-    {
+    {//start of class
 
         // POST: api/enrolments/500000/result
         [HttpPost("~/api/enrolments/{enrolment_id}/result")]
         public string capture_result(int enrolment_id, TimeSpan? finish_time = null,
             int? overall_position = null, int? category_position = null, string results_status = "Finished")
-        {
+        {//start of capture results method
+
             // Get the logged in user from the session
             int? user_id = HttpContext.Session.GetInt32("userID");
             string role = HttpContext.Session.GetString("role");
@@ -65,13 +66,14 @@ namespace race_day_event.Controllers
             }
 
             return message;
-        }
+        }//end of capture results methods
 
         // PUT: api/enrolments/500000/result
         [HttpPut("~/api/enrolments/{enrolment_id}/result")]
         public string update_result(int enrolment_id, TimeSpan? finish_time = null,
             int? overall_position = null, int? category_position = null, string results_status = "Finished")
-        {
+        {//start of update results method
+
             // Get the logged in user from the session
             int? user_id = HttpContext.Session.GetInt32("userID");
             string role = HttpContext.Session.GetString("role");
@@ -115,12 +117,13 @@ namespace race_day_event.Controllers
             }
 
             return message;
-        }
+        }//end of update results method
 
         // GET: api/results/me
         [HttpGet("me")]
         public string get_my_results()
-        {
+        {//start of get my results method
+
             // Get the logged in user from the session
             int? user_id = HttpContext.Session.GetInt32("userID");
             string role = HttpContext.Session.GetString("role");
@@ -146,12 +149,13 @@ namespace race_day_event.Controllers
             string message = result_manager.get_my_results(user_id.Value);
 
             return message;
-        }
+        }//end of get my results method
 
         // GET: api/events/300000/results
         [HttpGet("~/api/events/{event_id}/results")]
         public string get_event_results(int event_id)
-        {
+        {//start of get event results
+
             // Get the logged in user from the session
             int? user_id = HttpContext.Session.GetInt32("userID");
             string role = HttpContext.Session.GetString("role");
@@ -187,28 +191,28 @@ namespace race_day_event.Controllers
             }
 
             return message;
-        }
+        }//end of get event results method
 
         // Method to validate the result fields
         private bool is_result_valid(TimeSpan? finish_time, int? overall_position,
             int? category_position, string results_status)
-        {
+        {//start of is results valid method
             string[] valid_statuses = { "Finished", "DNF", "DSQ", "DNS" };
 
             if (finish_time.HasValue && (finish_time.Value < TimeSpan.Zero || finish_time.Value >= TimeSpan.FromHours(24)))
-            {
+            {//start
                 return false;
-            }
+            }//end 
 
             if (overall_position.HasValue && overall_position.Value <= 0)
-            {
+            {//start
                 return false;
-            }
+            }//end 
 
             if (category_position.HasValue && category_position.Value <= 0)
-            {
+            {//start
                 return false;
-            }
+            }//end
 
             if (!valid_statuses.Contains(results_status))
             {
@@ -216,8 +220,8 @@ namespace race_day_event.Controllers
             }
 
             return true;
-        }
+        }//end of is valid results method
 
 
-    }
-}
+    }//end of class
+}//end of namespace
