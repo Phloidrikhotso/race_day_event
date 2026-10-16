@@ -1,12 +1,13 @@
 ﻿using System.Data.SqlClient;
 
 namespace race_day_event.Database
-{
+{//start of namespace
     public class get_roles
-    {
+    {//start of class
         // Method to retrieve all roles
         public string get_role_info()
-        {
+        {//start of get role info
+
             string message = "";
 
             // Connection string
@@ -16,7 +17,8 @@ namespace race_day_event.Database
             string query = @"select role_id, role_name, role_description from roles;";
 
             try
-            {
+            {//start of try
+
                 // Instance for connection
                 SqlConnection connection = new SqlConnection(connection_string);
 
@@ -43,13 +45,13 @@ namespace race_day_event.Database
 
                 // Close the connection
                 connection.Close();
-            }
+            }//end of try
             catch (Exception error)
-            {
+            {//start of catch
                 message = error.Message;
-            }
+            }//end of ctch
 
             return message;
-        }
-    }
-}
+        }//end of get role info
+    }//end of class
+}//end of namespace
