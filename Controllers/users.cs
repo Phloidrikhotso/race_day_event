@@ -12,7 +12,8 @@ namespace race_day_event.Controllers
         // GET: api/users/me
         [HttpGet("me")]
         public string get_my_profile()
-        {
+        {//start of get my profile method
+
             // Get the logged in user id from the session
             int? userID = HttpContext.Session.GetInt32("userID");
 
@@ -30,12 +31,13 @@ namespace race_day_event.Controllers
             string message = profile.get_user_profile(userID.Value);
 
             return message;
-        }
+        }//end of get user profile method 
 
         // PUT: api/users/me
         [HttpPut("me")]
         public string update_my_profile(string first_name, string last_name, string username, string email, string phone_number)
-        {
+        {//start of update my profile 
+
             // Get the logged in user id from the session
             int? userID = HttpContext.Session.GetInt32("userID");
 
@@ -61,7 +63,7 @@ namespace race_day_event.Controllers
             string message = update.update_user(userID.Value, first_name, last_name, username, email, phone_number);
 
             return message;
-        }
+        }//end of update user profile
 
 
     }//end of class

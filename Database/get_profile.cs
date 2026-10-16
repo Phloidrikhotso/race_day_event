@@ -7,7 +7,8 @@ namespace race_day_event.Database
 
         // Method to retrieve the logged in user's profile
         public string get_user_profile(int user_id)
-        {
+        {//start of get user profile
+
             // Temporary message
             string message = "User not found...";
 
@@ -18,16 +19,19 @@ namespace race_day_event.Database
             string query = @" select first_name, last_name, username, email, phone_number from users where userID = @userID;";
 
             try
-            {
+            {//start of try
+
                 // Instance for connection
                 using (SqlConnection connection = new SqlConnection(connection_string))
-                {
+                {//start of using connection
+
                     // Open the connection
                     connection.Open();
 
                     // Instance of SqlCommand to run the query
                     using (SqlCommand run_query = new SqlCommand(query, connection))
-                    {
+                    {//start of using run query
+
                         // Add parameters
                         run_query.Parameters.AddWithValue("@userID", user_id);
 
@@ -44,9 +48,9 @@ namespace race_day_event.Database
                                     + reader["phone_number"].ToString();
                             }
                         }
-                    }
-                }
-            }
+                    }//end of using run query
+                }//end of using connection
+            }//end of try 
             catch (SqlException error)
             {
                 message = error.Message;
@@ -59,6 +63,6 @@ namespace race_day_event.Database
             return message;
 
 
-        }//end of method
+        }//end of get user profile method
     }//end of class
-}//end
+}//end of namespace
