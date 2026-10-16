@@ -7,7 +7,8 @@ namespace race_day_event.Database
 
         // Method to update the logged in user's profile
         public string update_user( int user_id, string first_name, string last_name, string username, string email, string phone_number)
-        {
+        {//start of update user method
+
             // Temporary message
             string message = "Profile update failed...";
 
@@ -20,13 +21,14 @@ namespace race_day_event.Database
                 where userID = @userID;";
 
             try
-            {
+            {//start of try method 
                 using (SqlConnection connection = new SqlConnection(connection_string))
-                {
+                {//start of using  connection object
                     connection.Open();
 
                     using (SqlCommand run_query = new SqlCommand(query, connection))
-                    {
+                    {//start of using run_query
+
                         // Add parameters
                         run_query.Parameters.AddWithValue("@userID", user_id);
 
@@ -45,34 +47,42 @@ namespace race_day_event.Database
                         int affected_row = run_query.ExecuteNonQuery();
 
                         if (affected_row > 0)
-                        {
+                        {//start of if affected row
                             message = "Profile updated successfully...";
-                        }
+                        }//end of if affected
                         else
-                        {
-                            message = "Update failed: user not found...";
-                        }
-                    }
-                }
-            }
-            catch (SqlException error)
-            {
-                if (error.Number == 2627 || error.Number == 2601)
-                {
-                    message = "Username or email already exists...";
-                }
-                else
-                {
-                    message = error.Message;
-                }
-            }
-            catch (Exception error)
-            {
-                message = error.Message;
-            }
+                        {//start of else method
 
+                            //message to display if updating the user fails
+                            message = "Update failed: user not found...";
+                        }//end of else
+                    }//end of using run_query
+                }//end of using connection
+            }//end of try
+            catch (SqlException error)
+            {//start of catch 
+                if (error.Number == 2627 || error.Number == 2601)
+                {//start of if error
+
+                    //message to display if username or email already exist
+                    message = "Username or email already exists...";
+                }//end of if
+                else
+                {//start of else
+
+                    //error message
+                    message = error.Message;
+                }//end of else
+            }//end of carch
+            catch (Exception error)
+            {//start of catch 
+
+                message = error.Message;
+            }//end of catch
+
+            //return message
             return message;
-        }
+        }//end of update user method
 
     }//end of class
 }//end of namespace
