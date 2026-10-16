@@ -1,7 +1,7 @@
 ﻿namespace race_day_event.Models
-{
+{//start of namespace
     public class enrolment
-    {
+    {//end of class
 
         public int enrolment_id { get; set; }
 
@@ -15,5 +15,5 @@
 
         public string enrolment_status { get; set; } = "Confirmed";
 
-    }
-}
+    }//end of class
+}//end of namespace
