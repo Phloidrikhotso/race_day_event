@@ -1,0 +1,85 @@
+﻿@functions {
+    // Gives the typed value back after a failed attempt
+    string field(string name)
+    {
+        return Context.Request.HasFormContentType ? Context.Request.Form[name].ToString() : "";
+    }
+}
+
+@{
+    ViewData["Title"] = "Register";
+
+    string chosen_role = field("role_name");
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card rd-card p-4">
+            <span class="rd-step">Step 1 of 2</span>
+            <h2 class="rd-title mb-3">Join RaceDay</h2>
+
+            @if (ViewBag.message != null)
+            {
+                <div class="alert alert-danger">@ViewBag.message</div>
+            }
+
+            <form method="post" asp-controller="Account" asp-action="Register">
+
+                <div class="mb-3">
+                    <label class="form-label" for="role_name">I am an</label>
+                    <select class="form-select" id="role_name" name="role_name">
+                        <option value="Participant" selected="@(chosen_role != "Organizer")">Participant</option>
+                        <option value="Organizer" selected="@(chosen_role == "Organizer")">Organizer</option>
+                    </select>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="first_name">First name</label>
+                        <input class="form-control" id="first_name" name="first_name" value="@field("first_name")" required />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="last_name">Last name</label>
+                        <input class="form-control" id="last_name" name="last_name" value="@field("last_name")" required />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="username">Username</label>
+                        <input class="form-control" id="username" name="username" value="@field("username")" required />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="phone_number">Phone number</label>
+                        <input class="form-control" id="phone_number" name="phone_number" value="@field("phone_number")" />
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="email">Email</label>
+                    <input class="form-control" type="email" id="email" name="email" value="@field("email")" required />
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="password">Password</label>
+                        <input class="form-control" type="password" id="password" name="password" required />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="confirm_password">Confirm password</label>
+                        <input class="form-control" type="password" id="confirm_password" name="confirm_password" required />
+                    </div>
+                </div>
+
+                <button type="submit" class="btn rd-btn w-100">Next: choose your picture &rarr;</button>
+                
+
+                <button type="submit" class="btn rd-btn w-100">Create account</button>
+            </form>
+
+            <p class="mt-3 mb-0">
+                Already have an account? <a asp-controller="Account" asp-action="Login">Log in</a>
+            </p>
+        </div>
+    </div>
+</div>
