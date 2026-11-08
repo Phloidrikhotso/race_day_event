@@ -6,7 +6,8 @@ namespace race_day_event.Database
     {//start of class
 
         // Method to update the logged in user's profile
-        public string update_user( int user_id, string first_name, string last_name, string username, string email, string phone_number)
+        public string update_user(int user_id, string first_name, string last_name, string username,
+            string email, string phone_number, string? profile_picture)
         {//start of update user method
 
             // Temporary message
@@ -15,9 +16,10 @@ namespace race_day_event.Database
             // Connection string
             string connection_string = @"Data source=(localdb)\api_both;database=raceday;";
 
-            // Query
+            // Query (the sticker only changes when a new one is supplied)
             string query = @" update users set first_name = @first_name, last_name = @last_name,
-                username = @username, email = @email, phone_number = @phone_number
+                username = @username, email = @email, phone_number = @phone_number,
+                profile_picture_url = coalesce(@profile_picture_url, profile_picture_url)
                 where userID = @userID;";
 
             try
@@ -42,6 +44,9 @@ namespace race_day_event.Database
 
                         run_query.Parameters.AddWithValue("@phone_number", string.IsNullOrWhiteSpace(phone_number)
                                 ? (object)DBNull.Value : phone_number);
+
+                        run_query.Parameters.AddWithValue("@profile_picture_url", string.IsNullOrWhiteSpace(profile_picture)
+                                ? (object)DBNull.Value : profile_picture);
 
                         // Execute the query
                         int affected_row = run_query.ExecuteNonQuery();

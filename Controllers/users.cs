@@ -35,7 +35,8 @@ namespace race_day_event.Controllers
 
         // PUT: api/users/me
         [HttpPut("me")]
-        public string update_my_profile(string first_name, string last_name, string username, string email, string phone_number)
+        public string update_my_profile(string first_name, string last_name, string username, string email,
+            string phone_number, authenticator.avatar_choice? profile_picture = null)
         {//start of update my profile 
 
             // Get the logged in user id from the session
@@ -59,8 +60,12 @@ namespace race_day_event.Controllers
             // Create an instance of the update class
             update_profile update = new update_profile();
 
+            // Turn the sticker choice into text (null keeps the current sticker)
+            string? picture_text = profile_picture.HasValue ? profile_picture.Value.ToString() : null;
+
             // Call the database method
-            string message = update.update_user(userID.Value, first_name, last_name, username, email, phone_number);
+            string message = update.update_user(userID.Value, first_name, last_name, username, email,
+                phone_number, picture_text);
 
             return message;
         }//end of update user profile
