@@ -1,0 +1,69 @@
+﻿@{
+    ViewData["Title"] = "Choose your picture";
+
+    string avatar_url = ViewBag.avatar_url;
+    bool first_time = ViewBag.first_time == true;
+    string? role = Context.Session.GetString("role");
+    string current_picture = Context.Session.GetString("picture") ?? "Runner";
+
+    string[] stickers = { "Runner", "Cyclist", "Walker", "Medal", "Trophy", "Sneaker" };
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card rd-card p-4">
+
+            @if (first_time)
+            {
+                <div><span class="rd-step">Step 2 of 2</span></div>
+            }
+
+            <h2 class="rd-title mb-1">Choose your picture</h2>
+            <p class="text-muted">Pick one of the avatars or upload your own photo.</p>
+
+            <div class="mb-4">
+                <img class="profile-avatar avatar-large" src="@avatar_url" alt="Your picture" />
+            </div>
+
+            <h5 class="rd-title">Pick an avatar</h5>
+            <form method="post" asp-controller="Account" asp-action="ChoosePicture">
+                <input type="hidden" name="first_time" value="@(first_time ? "true" : "false")" />
+
+                <div class="d-flex flex-wrap gap-3 mb-3">
+                    @foreach (string sticker in stickers)
+                    {
+                        <label class="sticker-option">
+                            <input type="radio" name="profile_picture" value="@sticker" checked="@(sticker == current_picture)" />
+                            <img src="https://api.dicebear.com/10.x/miniavs/svg?seed=@sticker" alt="@sticker" />
+                        </label>
+                    }
+                </div>
+
+                <button type="submit" class="btn rd-btn">Use this avatar</button>
+            </form>
+
+            <hr class="my-4" />
+
+            <h5 class="rd-title">Or upload your own photo</h5>
+            <form method="post" enctype="multipart/form-data" asp-controller="Account" asp-action="UploadPicture">
+                <input type="hidden" name="first_time" value="@(first_time ? "true" : "false")" />
+
+                <input class="form-control mb-2" type="file" name="picture_file" accept=".jpg,.jpeg,.png,.webp" required />
+                <div class="form-text mb-3">JPG, PNG or WebP, up to 2 MB.</div>
+
+                <button type="submit" class="btn rd-btn-blue">Upload photo</button>
+            </form>
+
+            <div class="mt-4">
+                @if (first_time)
+                {
+                    <a href="@(role == "Organizer" ? "/Organizer/Dashboard" : "/")">Skip for now</a>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Profile">&larr; Back to my profile</a>
+                }
+            </div>
+        </div>
+    </div>
+</div>
