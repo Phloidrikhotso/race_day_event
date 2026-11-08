@@ -8,8 +8,10 @@ namespace race_day_event.Database
         // Connection string (used by all the methods in this class)
         private string connection_string = @"Data source=(localdb)\api_both;database=raceday;";
 
-        // Method to enrol a participant into an event under a category
-        public string add_enrolment(int event_id, int user_id, int category_id)
+        // Method to enrol a participant into an event under a category, save the entry form details and give the race number
+        public string add_enrolment(int event_id, int user_id, int category_id, string emergency_name,
+            string emergency_relationship, string emergency_phone, string medical_notes, string address_street,
+            string address_city, string address_postal_code, string tshirt_size)
         {//start of add enrolment
             // Temporary message
             string message = "Enrolment failed...";
@@ -29,9 +31,16 @@ namespace race_day_event.Database
             string full_query = @" select count(*) from enrolment
                 where category_id = @category_id and enrolment_status <> 'Cancelled';";
 
-            // Query
-            string query = @" insert into enrolment (userID, event_id, category_id)
-                values (@userID, @event_id, @category_id);";
+            // Query: the race number is the next free number of the event (it starts at 1001 and
+            // the numbers of cancelled enrolments are never given out again)
+            string query = @" insert into enrolment (userID, event_id, category_id, race_number,
+                emergency_contact_name, emergency_contact_relationship, emergency_contact_phone, medical_notes,
+                address_street, address_city, address_postal_code, tshirt_size, indemnity_accepted)
+                output inserted.race_number
+                values (@userID, @event_id, @category_id,
+                (select isnull(max(race_number), 1000) + 1 from enrolment with (updlock, holdlock) where event_id = @event_id),
+                @emergency_name, @emergency_relationship, @emergency_phone, @medical_notes,
+                @address_street, @address_city, @address_postal_code, @tshirt_size, 1);";
 
             try
             {//start of try
@@ -67,6 +76,7 @@ namespace race_day_event.Database
 
                     using (SqlCommand check_category = new SqlCommand(category_query, connection))
                     {//start of using
+
                         check_category.Parameters.AddWithValue("@category_id", category_id);
 
                         check_category.Parameters.AddWithValue("@event_id", event_id);
@@ -113,7 +123,7 @@ namespace race_day_event.Database
                         return "Conflict: this category is full...";
                     }
 
-                    // Create the enrolment
+                    // Create the enrolment and get its race number back
                     using (SqlCommand run_query = new SqlCommand(query, connection))
                     {//start of run query
 
@@ -124,20 +134,46 @@ namespace race_day_event.Database
 
                         run_query.Parameters.AddWithValue("@category_id", category_id);
 
-                        // Execute the query
-                        int affected_row = run_query.ExecuteNonQuery();
+                        run_query.Parameters.AddWithValue("@emergency_name", emergency_name);
 
-                        if (affected_row > 0)
+                        run_query.Parameters.AddWithValue("@emergency_relationship", emergency_relationship);
+
+                        run_query.Parameters.AddWithValue("@emergency_phone", emergency_phone);
+
+                        // The medical notes are optional
+                        run_query.Parameters.AddWithValue("@medical_notes",
+                            string.IsNullOrWhiteSpace(medical_notes) ? DBNull.Value : (object)medical_notes);
+
+                        run_query.Parameters.AddWithValue("@address_street", address_street);
+
+                        run_query.Parameters.AddWithValue("@address_city", address_city);
+
+                        run_query.Parameters.AddWithValue("@address_postal_code", address_postal_code);
+
+                        run_query.Parameters.AddWithValue("@tshirt_size", tshirt_size);
+
+                        // Execute the query
+                        object race_number = run_query.ExecuteScalar();
+
+                        if (race_number != null)
                         {
-                            message = "Enrolment created successfully...";
+                            message = "Enrolment created successfully... Race number: " + race_number.ToString();
                         }
                     }//end of using run query
                 }//end of using connection
             }//end of try
             catch (SqlException error)
-            {
-                message = error.Message;
-            }
+            {//start of catch
+                // 2601 and 2627 mean the race number was taken at the very same moment by someone else
+                if (error.Number == 2601 || error.Number == 2627)
+                {
+                    message = "Conflict: please try again, the race number was taken at the same moment...";
+                }
+                else
+                {
+                    message = error.Message;
+                }
+            }//end of catch
             catch (Exception error)
             {
                 message = error.Message;
@@ -208,6 +244,60 @@ namespace race_day_event.Database
 
             return message;
         }//end of get my enrolments
+
+        // Method to list the race numbers of the logged in participant's enrolments (enrolment id - race number)
+        public string get_my_race_numbers(int user_id)
+        {//start of get my race numbers
+
+            // Temporary message
+            string message = "";
+
+            // SQL query
+            string query = @" select enrolment_id, race_number from enrolment
+                where userID = @userID and race_number is not null order by enrolment_id;";
+
+            try
+            {//start of try
+                using (SqlConnection connection = new SqlConnection(connection_string))
+                {//start of using connection
+
+                    //open connection
+                    connection.Open();
+
+                    using (SqlCommand run_query = new SqlCommand(query, connection))
+                    {//start of using run query
+                        // Add parameters
+                        run_query.Parameters.AddWithValue("@userID", user_id);
+
+                        using (SqlDataReader reader = run_query.ExecuteReader())
+                        {//start of using
+                            while (reader.Read())
+                            {//start of while
+                                message += reader["enrolment_id"].ToString() + " - "
+                                    + reader["race_number"].ToString()
+                                    + Environment.NewLine;
+                            }//end of while
+                        }//end of using 
+                    }//end of using run query
+                }//end of using connection
+
+                // Check whether any race numbers were found
+                if (message == "")
+                {
+                    message = "No race numbers found...";
+                }
+            }//end of try
+            catch (SqlException error)
+            {
+                message = error.Message;
+            }
+            catch (Exception error)
+            {//start of catch
+                message = error.Message;
+            }//end of catch
+
+            return message;
+        }//end of get my race numbers
 
         // Method to list the participants enrolled in an event owned by the organizer
         public string get_event_enrolments(int event_id, int organizer_id)
