@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR.Protocol;
+using System.Data;
 using System.Data.SqlClient;
 
 namespace race_day_event.Database
@@ -9,17 +10,22 @@ namespace race_day_event.Database
         // Connection string (used by all the methods in this class)
         private string connection_string = @"Data source=(localdb)\api_both;database=raceday;";
 
-        // Method to list all upcoming events that are open for enrolment
-        public string get_all_events()
+        // Method to list all upcoming events that are open for enrolment (with optional filters)
+        public string get_all_events(string? event_type, string? event_location, DateTime? from_date, DateTime? to_date)
         {//start of get all events method
 
             // Temporary message
             string message = "";
 
-            // SQL query
+            // SQL query (a filter that is not supplied is ignored)
             string query = @" select event_id, event_name, event_description, event_date, event_location,
                 distance, event_type, event_status
-                from event where event_date >= getdate() and event_status = 'Open' order by event_date;";
+                from event where event_date >= getdate() and event_status = 'Open'
+                and (@event_type is null or event_type = @event_type)
+                and (@event_location is null or event_location like '%' + @event_location + '%')
+                and (@from_date is null or event_date >= @from_date)
+                and (@to_date is null or event_date < dateadd(day, 1, @to_date))
+                order by event_date;";
 
             try
             {//start of try
@@ -31,6 +37,19 @@ namespace race_day_event.Database
 
                     using (SqlCommand run_query = new SqlCommand(query, connection))
                     {//start of run query
+
+                        // Add parameters
+                        run_query.Parameters.AddWithValue("@event_type", string.IsNullOrWhiteSpace(event_type)
+                                ? (object)DBNull.Value : event_type);
+
+                        run_query.Parameters.AddWithValue("@event_location", string.IsNullOrWhiteSpace(event_location)
+                                ? (object)DBNull.Value : event_location);
+
+                        run_query.Parameters.Add("@from_date", SqlDbType.DateTime).Value = from_date.HasValue
+                                ? (object)from_date.Value : DBNull.Value;
+
+                        run_query.Parameters.Add("@to_date", SqlDbType.DateTime).Value = to_date.HasValue
+                                ? (object)to_date.Value : DBNull.Value;
 
                         using (SqlDataReader reader = run_query.ExecuteReader())
                         {//start of using
@@ -73,17 +92,19 @@ namespace race_day_event.Database
             return message;
         }//end of get all events
 
-        // Method to list the events organized by the logged in organizer
+        // Method to list the events organized by the logged in organizer (with the enrolment count)
         public string get_my_events(int organizer_id)
         {//start of get my events
 
             // Temporary message
             string message = "";
 
-            // SQL query
-            string query = @" select event_id, event_name, event_description, event_date, event_location,
-                distance, event_type, event_status
-                from event where organizer_id = @organizer_id order by event_date desc;";
+            // SQL query (cancelled enrolments are not counted)
+            string query = @" select e.event_id, e.event_name, e.event_description, e.event_date, e.event_location,
+                e.distance, e.event_type, e.event_status,
+                (select count(*) from enrolment en
+                    where en.event_id = e.event_id and en.enrolment_status <> 'Cancelled') as enrolment_count
+                from event e where e.organizer_id = @organizer_id order by e.event_date desc;";
 
             try
             {//start of try
@@ -110,7 +131,8 @@ namespace race_day_event.Database
                                     + reader["event_location"].ToString() + " - "
                                     + reader["distance"].ToString() + " - "
                                     + reader["event_type"].ToString() + " - "
-                                    + reader["event_status"].ToString()
+                                    + reader["event_status"].ToString() + " - "
+                                    + reader["enrolment_count"].ToString()
                                     + Environment.NewLine;
                             }//end of while
                         }//end of using
@@ -289,7 +311,7 @@ namespace race_day_event.Database
                     connection.Open();
 
                     // Check that the event exists and who owns it
-                    object owner = null;
+                    object? owner = null;
 
                     using (SqlCommand check_owner = new SqlCommand(owner_query, connection))
                     {
@@ -371,7 +393,7 @@ namespace race_day_event.Database
                     connection.Open();
 
                     // Check that the event exists and who owns it
-                    object owner = null;
+                    object? owner = null;
 
                     using (SqlCommand check_owner = new SqlCommand(owner_query, connection))
                     {
@@ -425,6 +447,7 @@ namespace race_day_event.Database
 
             return message;
         }//end of delete event method
+
 
     }//end of class
 }//end of namespace

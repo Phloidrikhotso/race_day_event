@@ -10,7 +10,7 @@ namespace race_day_event.Controllers
     public class events : ControllerBase
     {//start of class
 
-        // The race types an organizer can choose (shows as a dropdown in Swagger)
+        // The race types an organizer can choose(shows as a dropdown in Swagger)
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public enum event_type_choice
         {//start of event type choice
@@ -30,16 +30,20 @@ namespace race_day_event.Controllers
             Completed
         }//end of event status choice
 
-        // GET: api/events
+        // GET: api/events  (optional filters: event_type, event_location, from_date, to_date)
         [HttpGet]
-        public string get_events()
+        public string get_events(event_type_choice? event_type = null, string? event_location = null,
+            DateTime? from_date = null, DateTime? to_date = null)
         {//start of get events
 
             // Create an instance of the events class
             manage_events event_manager = new manage_events();
 
+            // Turn the dropdown choice into text (null when no type was picked)
+            string? event_type_text = event_type.HasValue ? event_type.Value.ToString() : null;
+
             // Call the database method
-            string message = event_manager.get_all_events();
+            string message = event_manager.get_all_events(event_type_text, event_location, from_date, to_date);
 
             return message;
         }//end of get events
@@ -271,6 +275,7 @@ namespace race_day_event.Controllers
 
             return true;
         }//end of is event valid
+
 
 
     }//end of class

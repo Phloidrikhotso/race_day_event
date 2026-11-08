@@ -11,8 +11,8 @@ namespace race_day_event.Database
     {//start of class
 
         // Method to register a new user
-        public string add_user( string role_name,string first_name, string last_name, string username,
-            string email, string phone_number, string password)
+        public string add_user(string role_name, string first_name, string last_name, string username,
+            string email, string phone_number, string password, string profile_picture)
         {//start of method 
             // Temporary message
             string message = "User registration failed...";
@@ -24,8 +24,8 @@ namespace race_day_event.Database
             string hashed_password = BCrypt.Net.BCrypt.HashPassword(password);
 
             // Query
-            string query = @" INSERT INTO users (role_id, first_name, last_name, username,email, phone_number, password_hash)
-                SELECT role_id, @first_name, @last_name, @username, @email, @phone_number, @password_hash FROM roles
+            string query = @" INSERT INTO users (role_id, first_name, last_name, username,email, phone_number, password_hash, profile_picture_url)
+                SELECT role_id, @first_name, @last_name, @username, @email, @phone_number, @password_hash, @profile_picture_url FROM roles
                 where role_name = @role_name;";
 
             try
@@ -53,6 +53,9 @@ namespace race_day_event.Database
                                 ? (object)DBNull.Value : phone_number);
 
                         run_query.Parameters.AddWithValue("@password_hash", hashed_password);
+
+                        run_query.Parameters.AddWithValue("@profile_picture_url", string.IsNullOrWhiteSpace(profile_picture)
+                                ? (object)DBNull.Value : profile_picture);
 
                         // Execute the query
                         int affected_row = run_query.ExecuteNonQuery();

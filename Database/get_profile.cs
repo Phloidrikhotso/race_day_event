@@ -16,7 +16,10 @@ namespace race_day_event.Database
             string connection_string = @"Data source=(localdb)\api_both;database=raceday;";
 
             // SQL query
-            string query = @" select first_name, last_name, username, email, phone_number from users where userID = @userID;";
+            string query = @" select u.userID, u.first_name, u.last_name, u.username, u.email, u.phone_number,
+                u.profile_picture_url, r.role_name
+                from users u inner join roles r on u.role_id = r.role_id
+                where u.userID = @userID;";
 
             try
             {//start of try
@@ -45,7 +48,10 @@ namespace race_day_event.Database
                                     + reader["last_name"].ToString() + " - "
                                     + reader["username"].ToString() + " - "
                                     + reader["email"].ToString() + " - "
-                                    + reader["phone_number"].ToString();
+                                    + reader["phone_number"].ToString() + " - "
+                                    + reader["profile_picture_url"].ToString() + " - "
+                                    + reader["role_name"].ToString() + " - "
+                                    + reader["userID"].ToString();
                             }
                         }
                     }//end of using run query

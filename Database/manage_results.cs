@@ -173,7 +173,7 @@ namespace race_day_event.Database
                     connection.Open();
 
                     // Check that the enrolment exists and who owns the event
-                    object owner = null;
+                    object? owner = null;
 
                     using (SqlCommand check_owner = new SqlCommand(owner_query, connection))
                     {
@@ -243,16 +243,19 @@ namespace race_day_event.Database
             return message;
         }//end of update result method
 
-        // Method to list the logged in participant's results
+        // Method to list the logged in participant's results (with the total finishers of each event)
         public string get_my_results(int user_id)
         {//start of get my results method
 
             // Temporary message
             string message = "";
 
-            // SQL query
+            // SQL query (total_finishers counts everyone with a Finished result in the same event)
             string query = @" select r.result_id, e.event_name, e.event_date, c.category_name,
-                r.finish_time, r.overall_position, r.category_position, r.results_status
+                r.finish_time, r.overall_position, r.category_position, r.results_status,
+                (select count(*) from results r2
+                    inner join enrolment en2 on r2.enrolment_id = en2.enrolment_id
+                    where en2.event_id = en.event_id and r2.results_status = 'Finished') as total_finishers
                 from results r
                 inner join enrolment en on r.enrolment_id = en.enrolment_id
                 inner join event e on en.event_id = e.event_id
@@ -285,7 +288,8 @@ namespace race_day_event.Database
                                     + reader["finish_time"].ToString() + " - "
                                     + reader["overall_position"].ToString() + " - "
                                     + reader["category_position"].ToString() + " - "
-                                    + reader["results_status"].ToString()
+                                    + reader["results_status"].ToString() + " - "
+                                    + reader["total_finishers"].ToString()
                                     + Environment.NewLine;
                             }//end of while
                         }//end of using 
@@ -344,7 +348,7 @@ namespace race_day_event.Database
                     connection.Open();
 
                     // Check that the event exists and who owns it
-                    object owner = null;
+                    object? owner = null;
 
                     using (SqlCommand check_owner = new SqlCommand(owner_query, connection))
                     {

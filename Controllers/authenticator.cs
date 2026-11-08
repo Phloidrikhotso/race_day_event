@@ -20,15 +20,29 @@ namespace race_day_event.Controllers
             Participant
         }//end of role choice
 
+        // The stickers a user can pick as a profile picture (shows as a dropdown in Swagger)
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public enum avatar_choice
+        {//start of avatar choice
+            Runner,
+            Cyclist,
+            Walker,
+            Medal,
+            Trophy,
+            Sneaker
+        }//end of avatar choice
+
 
         [HttpPost("register")]
         public string register_user(role_choice role_name, string first_name, string last_name,
-            string username, string email, string phone_number, string password)
+            string username, string email, string phone_number, string password,
+            avatar_choice profile_picture = avatar_choice.Runner)
         {//start of register user method
 
             register_user register = new register_user();
 
-            string message = register.add_user(role_name.ToString(), first_name, last_name, username, email, phone_number, password);
+            string message = register.add_user(role_name.ToString(), first_name, last_name, username, email,
+                phone_number, password, profile_picture.ToString());
 
             return message;
         }//end of register user method
