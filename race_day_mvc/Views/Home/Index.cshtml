@@ -1,0 +1,200 @@
+﻿@model List<string[]>
+@functions {
+    // Removes the extra zeros from a distance such as 10.000
+    string tidy(string number)
+    {
+        if (!number.Contains('.') && !number.Contains(','))
+        {
+            return number;
+        }
+
+        return number.TrimEnd('0').TrimEnd('.', ',');
+    }
+}
+@{
+    ViewData["Title"] = "Home";
+
+    string? first_name = Context.Session.GetString("first_name");
+    bool logged_in = Context.Session.GetInt32("userID") != null;
+
+    string filter_type = Context.Request.Query["event_type"].ToString();
+    string filter_location = Context.Request.Query["event_location"].ToString();
+    string filter_from = Context.Request.Query["from_date"].ToString();
+    string filter_to = Context.Request.Query["to_date"].ToString();
+
+    // Visitors only get a preview of the events, participants see them all
+    List<string[]> shown = logged_in ? Model : Model.Take(6).ToList();
+}
+
+@section Hero {
+    @if (!logged_in)
+    {
+        <section class="rd-fullhero">
+            <div class="container">
+                <p class="rd-eyebrow mb-2">Road running &middot; Walking &middot; Cycling</p>
+                <h1>Race day <span>starts here</span></h1>
+                <p class="lead my-4">Find a race near you, enter in minutes and follow your results, all in one place.</p>
+                <a class="btn rd-btn btn-lg me-2 px-4" href="#events">Browse events</a>
+                <a class="btn btn-outline-light btn-lg px-4" asp-controller="Account" asp-action="Register">Join RaceDay</a>
+            </div>
+            <a class="rd-scroll-cue" href="#events">Scroll</a>
+        </section>
+    }
+    else
+    {
+        <section class="rd-fullhero rd-fullhero-medium">
+            <div class="container">
+                <p class="rd-eyebrow mb-2">Welcome back, @first_name</p>
+                <h1>Find your <span>next race</span></h1>
+                <p class="lead my-4">Run, walk or cycle across South Africa.</p>
+                <a class="btn rd-btn btn-lg me-2 px-4" href="#events">Browse events</a>
+                <a class="btn btn-outline-light btn-lg px-4" asp-controller="Participant" asp-action="MyEnrolments">My enrolments</a>
+            </div>
+            <a class="rd-scroll-cue" href="#events">Scroll</a>
+        </section>
+    }
+}
+
+<section id="events" class="rd-band rd-band-soft">
+    <div class="container">
+
+        <div class="d-flex flex-wrap justify-content-between align-items-end mb-4 gap-2">
+            <h2 class="rd-section-title mb-0">Upcoming <span>events</span></h2>
+
+            @if (!logged_in)
+            {
+                <a class="btn rd-btn-outline" asp-controller="Account" asp-action="Login">Log in to enter</a>
+            }
+        </div>
+
+        @if (ViewBag.message != null)
+        {
+            <div class="alert alert-danger">@ViewBag.message</div>
+        }
+
+        @if (logged_in)
+        {
+            <form method="get" asp-controller="Home" asp-action="Index" class="filter-bar p-3 mb-4">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-2">
+                        <label class="form-label" for="event_type">Type</label>
+                        <select class="form-select" id="event_type" name="event_type">
+                            <option value="">All</option>
+                            <option value="Run" selected="@(filter_type == "Run")">Run</option>
+                            <option value="Walk" selected="@(filter_type == "Walk")">Walk</option>
+                            <option value="Cycle" selected="@(filter_type == "Cycle")">Cycle</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" for="event_location">Location</label>
+                        <input class="form-control" id="event_location" name="event_location" value="@filter_location" placeholder="e.g. Pretoria" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" for="from_date">From</label>
+                        <input class="form-control" type="date" id="from_date" name="from_date" value="@filter_from" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" for="to_date">To</label>
+                        <input class="form-control" type="date" id="to_date" name="to_date" value="@filter_to" />
+                    </div>
+                    <div class="col-md-3 d-flex gap-2">
+                        <button type="submit" class="btn rd-btn flex-fill">Filter</button>
+                        <a class="btn btn-outline-secondary" asp-controller="Home" asp-action="Index">Clear</a>
+                    </div>
+                </div>
+            </form>
+        }
+
+        @if (Model.Count == 0 && ViewBag.message == null)
+        {
+            <div class="alert alert-info">No upcoming events match your search.</div>
+        }
+
+        <div class="row">
+            @foreach (string[] ev in shown)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card rd-card event-card h-100">
+                        <div class="rd-cover rd-cover-@(ev[6].ToLower())"><span>@ev[6]</span></div>
+                        <div class="card-body d-flex flex-column">
+                            <p class="text-muted small mb-1">@ev[3]</p>
+                            <h5 class="rd-title mb-1">@ev[1]</h5>
+                            <p class="mb-2">@ev[4] &middot; @tidy(ev[5]) km</p>
+                            <p class="small flex-grow-1">@(ev[2].Length > 90 ? ev[2].Substring(0, 90) + "..." : ev[2])</p>
+                            <a class="btn rd-btn" asp-controller="Participant" asp-action="Details" asp-route-id="@ev[0]">View details</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+@if (!logged_in)
+{
+    <section class="rd-band rd-band-white">
+        <div class="container">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6">
+                    <p class="rd-eyebrow rd-eyebrow-dark mb-2">Why RaceDay</p>
+                    <h2 class="rd-section-title mb-3">Everything for <span>race day</span></h2>
+                    <p>RaceDay brings runners, walkers, cyclists and race organizers together. Browse upcoming events across South Africa, pick the distance that suits you and enter online.</p>
+                    <p>Organizers get one place to plan events, manage enrolments and publish results, so every finisher can look up their time afterwards.</p>
+                    <a class="btn rd-btn-blue btn-lg mt-2" asp-controller="Account" asp-action="Register">Create a free account</a>
+                </div>
+                <div class="col-lg-6">
+                    <img class="rd-photo" src="@Url.Content("~/images/runners-bw.jpg")" alt="Runners racing through the shadows" />
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="rd-band rd-band-soft">
+        <div class="container">
+            <div class="text-center mb-5">
+                <p class="rd-eyebrow rd-eyebrow-dark mb-2">For organizers</p>
+                <h2 class="rd-section-title">Plan your <span>race</span></h2>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3">
+                    <div class="rd-tile">
+                        <div class="rd-tile-number">1</div>
+                        <h5 class="rd-title">Create your event</h5>
+                        <p class="mb-0">Set the date, location and race type, then open it for enrolment when you are ready.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="rd-tile">
+                        <div class="rd-tile-number">2</div>
+                        <h5 class="rd-title">Add every distance</h5>
+                        <p class="mb-0">Offer a 10 km, a half marathon, a marathon or an ultra in the same event, each with its own fee and limit.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="rd-tile">
+                        <div class="rd-tile-number">3</div>
+                        <h5 class="rd-title">Manage enrolments</h5>
+                        <p class="mb-0">See who has entered and how many people are in each category.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="rd-tile">
+                        <div class="rd-tile-number">4</div>
+                        <h5 class="rd-title">Publish results</h5>
+                        <p class="mb-0">Capture finish times and positions, and every runner can see their own result.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="rd-band rd-band-green text-center">
+        <div class="container">
+            <h2 class="rd-section-title mb-3">Ready for <span>race day?</span></h2>
+            <p class="lead mb-4">Join RaceDay and find your next start line.</p>
+            <a class="btn rd-btn btn-lg me-2 px-4" asp-controller="Account" asp-action="Register">Join RaceDay</a>
+            <a class="btn btn-outline-light btn-lg px-4" asp-controller="Account" asp-action="Login">Log in</a>
+        </div>
+    </section>
+}
