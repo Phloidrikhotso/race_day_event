@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, part3 ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, part3 ]
 
 permissions:
   contents: read
@@ -28,10 +28,14 @@ jobs:
       - name: Restore packages
         run: |
           dotnet restore race_day_event.csproj
+          dotnet restore race_day_mvc/race_day_mvc.csproj
           dotnet restore TestProject1/TestProject1.csproj
 
       - name: Build the API
         run: dotnet build race_day_event.csproj --configuration Release --no-restore
+
+      - name: Build the MVC application
+        run: dotnet build race_day_mvc/race_day_mvc.csproj --configuration Release --no-restore
 
       - name: Run the unit tests
         run: dotnet test TestProject1/TestProject1.csproj --configuration Release --no-restore --logger "console;verbosity=normal"

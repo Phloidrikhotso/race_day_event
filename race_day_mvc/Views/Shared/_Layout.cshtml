@@ -1,0 +1,227 @@
+﻿@{
+    string? role = Context.Session.GetString("role");
+    string? first_name = Context.Session.GetString("first_name");
+    string picture = Context.Session.GetString("picture") ?? "Runner";
+    string avatar_url = Context.Session.GetString("avatar_url") ?? ("https://api.dicebear.com/10.x/miniavs/svg?seed=" + picture);
+    bool logged_in = Context.Session.GetInt32("userID") != null;
+
+    // Pages with a big banner get a see-through menu on top of it
+    bool has_hero = IsSectionDefined("Hero");
+
+    string current_controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    string current_action = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+
+    // Adds the active class to the link of the page the user is on
+    string active(string controller_name, params string[] action_names)
+    {
+        return current_controller == controller_name && action_names.Contains(current_action) ? " active" : "";
+    }
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - RaceDay</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <nav id="rd_navbar" class="navbar navbar-expand-lg navbar-light rd-navbar@(has_hero ? " rd-navbar-overlay" : "")">
+            <div class="container">
+                <a class="navbar-brand rd-brand d-flex align-items-center" asp-controller="Home" asp-action="Index">
+                    <span class="rd-brand-mark">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="#fff"><path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z" /></svg>
+                    </span>
+                    RACEDAY
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="navbar-collapse collapse justify-content-between">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+                        @if (role != "Organizer")
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link@(active("Home", "Index"))" asp-controller="Home" asp-action="Index">Home</a>
+                            </li>
+                        }
+
+                        @if (role == "Participant")
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link@(active("Participant", "MyEnrolments"))" asp-controller="Participant" asp-action="MyEnrolments">My enrolments</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link@(active("Participant", "MyResults"))" asp-controller="Participant" asp-action="MyResults">My results</a>
+                            </li>
+                        }
+
+                        @if (role == "Organizer")
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link@(active("Organizer", "Dashboard"))" asp-controller="Organizer" asp-action="Dashboard">Dashboard</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link@(active("Organizer", "Events", "CreateEvent", "EditEvent"))" asp-controller="Organizer" asp-action="Events">My events</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link@(active("Organizer", "Categories", "CreateCategory", "EditCategory"))" asp-controller="Organizer" asp-action="Categories">Categories</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link@(active("Organizer", "Enrolments"))" asp-controller="Organizer" asp-action="Enrolments">Enrolments</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link@(active("Organizer", "Results"))" asp-controller="Organizer" asp-action="Results">Results</a>
+                            </li>
+                        }
+                    </ul>
+
+                    <ul class="navbar-nav align-items-lg-center">
+                        @if (logged_in)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link d-flex align-items-center@(active("Account", "Profile", "ChoosePicture"))" asp-controller="Account" asp-action="Profile">
+                                    <img class="nav-avatar me-2" src="@avatar_url" alt="Your picture" />
+                                    <span>@first_name</span>
+                                    <span class="rd-role-badge ms-2">@role</span>
+                                </a>
+                            </li>
+                            <li class="nav-item ms-lg-2">
+                                <form method="post" asp-controller="Account" asp-action="Logout">
+                                    <button type="submit" class="btn rd-btn-outline btn-sm">Log out</button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link@(active("Account", "Login"))" asp-controller="Account" asp-action="Login">Log in</a>
+                            </li>
+                            <li class="nav-item ms-lg-2">
+                                <a class="btn rd-btn btn-sm" asp-controller="Account" asp-action="Register">Register</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    @* Messages float at the top of the screen and fade away by themselves *@
+    <div class="rd-flash">
+        @if (TempData["message_success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show shadow">
+                @TempData["message_success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        @if (TempData["message_error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show shadow">
+                @TempData["message_error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+    </div>
+
+    @* The full-screen banner of a page (only the home page has one) *@
+    @RenderSection("Hero", required: false)
+
+    <div class="rd-page">
+        <div class="container">
+            <main role="main" class="@(has_hero ? "" : "pb-3 pt-4")">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <footer class="rd-footer">
+        <div class="container">
+            <div class="row gy-4">
+                <div class="col-md-5">
+                    <div class="rd-footer-brand d-flex align-items-center mb-3">
+                        <span class="rd-brand-mark">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="#fff"><path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z" /></svg>
+                        </span>
+                        RACEDAY
+                    </div>
+                    <p class="mb-0">Find, enter and follow road running, walking and cycling events across South Africa.</p>
+                </div>
+
+                <div class="col-6 col-md-3">
+                    <h6>Explore</h6>
+                    <ul class="list-unstyled mb-0">
+                        @if (role == "Organizer")
+                        {
+                            <li><a asp-controller="Organizer" asp-action="Dashboard">Dashboard</a></li>
+                            <li><a asp-controller="Organizer" asp-action="Events">My events</a></li>
+                            <li><a asp-controller="Organizer" asp-action="Results">Results</a></li>
+                        }
+                        else
+                        {
+                            <li><a asp-controller="Home" asp-action="Index">Upcoming events</a></li>
+
+                            @if (role == "Participant")
+                            {
+                                <li><a asp-controller="Participant" asp-action="MyEnrolments">My enrolments</a></li>
+                                <li><a asp-controller="Participant" asp-action="MyResults">My results</a></li>
+                            }
+                            else
+                            {
+                                <li><a asp-controller="Account" asp-action="Login">Log in</a></li>
+                                <li><a asp-controller="Account" asp-action="Register">Register</a></li>
+                            }
+                        }
+                    </ul>
+                </div>
+
+                <div class="col-6 col-md-4">
+                    <h6>For organizers</h6>
+                    <p class="mb-0">Plan events with several distances, manage enrolments and publish results in one place.</p>
+                </div>
+            </div>
+
+            <div class="rd-footer-bottom">
+                &copy; 2026 RaceDay &middot; Avatars: Miniavs by Webpixels (CC BY 4.0) via DiceBear &middot; Photos: Mike Cox and Jeffrey Blum on Unsplash
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+            // The menu on top of a banner turns solid white once the page is scrolled
+            (function () {
+                var navbar = document.getElementById("rd_navbar");
+
+                function update() {
+                    if (window.scrollY > 40) {
+                        navbar.classList.add("rd-navbar-solid");
+                    } else {
+                        navbar.classList.remove("rd-navbar-solid");
+                    }
+                }
+
+                window.addEventListener("scroll", update);
+                update();
+
+                // Messages fade away after a few seconds
+                setTimeout(function () {
+                    document.querySelectorAll(".rd-flash .alert").forEach(function (alert) {
+                        alert.classList.remove("show");
+                        setTimeout(function () { alert.remove(); }, 400);
+                    });
+                }, 7000);
+            })();
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

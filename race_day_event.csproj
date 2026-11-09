@@ -17,6 +17,10 @@
 		<Content Remove="TestProject1\**" />
 		<EmbeddedResource Remove="TestProject1\**" />
 		<None Remove="TestProject1\**" />
+		<Compile Remove="race_day_mvc\**" />
+		<Content Remove="race_day_mvc\**" />
+		<EmbeddedResource Remove="race_day_mvc\**" />
+		<None Remove="race_day_mvc\**" />
 	</ItemGroup>
 
 </Project>

@@ -1,0 +1,100 @@
+﻿@model List<string[]>
+@{
+    ViewData["Title"] = "Enrolments";
+
+    List<string[]> events = ViewBag.events ?? new List<string[]>();
+    string[]? selected = ViewBag.selected_event;
+    Dictionary<string, int> category_counts = ViewBag.category_counts ?? new Dictionary<string, int>();
+}
+
+<h1 class="rd-title mb-3">Enrolments</h1>
+
+@if (ViewBag.message != null)
+{
+    <div class="alert alert-danger">@ViewBag.message</div>
+}
+
+@if (events.Count == 0 && ViewBag.message == null)
+{
+    <div class="card rd-card p-4">
+        <p>You need an event before you can see enrolments.</p>
+        <div><a class="btn rd-btn" asp-controller="Organizer" asp-action="CreateEvent">Create an event</a></div>
+    </div>
+}
+else if (events.Count > 0)
+{
+    <form method="get" asp-controller="Organizer" asp-action="Enrolments" class="filter-bar p-3 mb-4">
+        <label class="form-label" for="event_id">Choose an event</label>
+        <select class="form-select" id="event_id" name="event_id" onchange="this.form.submit()">
+            <option value="">-- Select an event --</option>
+            @foreach (string[] ev in events)
+            {
+                <option value="@ev[0]" selected="@(selected != null && selected[0] == ev[0])">@ev[1] (@ev[3])</option>
+            }
+        </select>
+    </form>
+
+    @if (selected != null)
+    {
+        <h3 class="rd-title mb-3">@selected[1]</h3>
+
+        <div class="row mb-4">
+            <div class="col-6 col-md-3 mb-3">
+                <div class="card rd-card p-3 text-center h-100">
+                    <div class="rd-title display-6">@ViewBag.active_count</div>
+                    <div>Entrants</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3 mb-3">
+                <div class="card rd-card p-3 text-center h-100">
+                    <div class="rd-title display-6">@ViewBag.cancelled_count</div>
+                    <div>Cancelled</div>
+                </div>
+            </div>
+            @foreach (var pair in category_counts)
+            {
+                <div class="col-6 col-md-3 mb-3">
+                    <div class="card rd-card p-3 text-center h-100">
+                        <div class="rd-title display-6">@pair.Value</div>
+                        <div>@pair.Key entrants</div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (Model.Count == 0)
+        {
+            <div class="alert alert-info">Nobody has entered this event yet.</div>
+        }
+        else
+        {
+            <div class="card rd-card p-3">
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Participant</th>
+                                <th>Username</th>
+                                <th>Category</th>
+                                <th>Entered on</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (string[] row in Model)
+                            {
+                                <tr>
+                                    <td>@row[1]</td>
+                                    <td>@row[2]</td>
+                                    <td><span class="type-badge type-@(row[3].ToLower())">@row[3]</span></td>
+                                    <td>@row[4]</td>
+                                    <td><span class="status-badge status-@(row[5].ToLower())">@row[5]</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    }
+}

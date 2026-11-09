@@ -360,4 +360,5 @@ MigrationBackup/
 .ionide/
 
 # Fody - auto-generated XML schema
-FodyWeavers.xsd
+FodyWeavers.xsdrace_day_mvc/wwwroot/uploads/
+race_day_mvc/wwwroot/uploads/

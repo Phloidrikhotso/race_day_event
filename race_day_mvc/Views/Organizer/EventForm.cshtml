@@ -1,0 +1,78 @@
+﻿@{
+    string mode = ViewBag.mode;
+    string[] values = ViewBag.event_values;
+    string? ev_id = ViewBag.event_id;
+
+    bool is_edit = mode == "Edit";
+
+    ViewData["Title"] = is_edit ? "Edit event" : "Create event";
+
+    string[] types = { "Run", "Walk", "Cycle" };
+    string[] statuses = { "Planned", "Open", "Closed", "Cancelled", "Completed" };
+}
+
+<a asp-controller="Organizer" asp-action="Events" class="d-inline-block mb-3">&larr; Back to my events</a>
+
+<div class="card rd-card p-4">
+    <h1 class="rd-title mb-3">@(is_edit ? "Edit event" : "Create event")</h1>
+
+    @if (!is_edit)
+    {
+        <p class="text-muted">Enter the longest distance here. Next you will add every race in this event (10 km, half marathon, marathon...) as a category, each with its own fee and limit.</p>
+    }
+
+    @if (ViewBag.message != null)
+    {
+        <div class="alert alert-danger">@ViewBag.message</div>
+    }
+
+    <form method="post" asp-controller="Organizer" asp-action="@(is_edit ? "EditEvent" : "CreateEvent")" asp-route-id="@ev_id">
+        <div class="row g-3">
+            <div class="col-md-8">
+                <label class="form-label" for="event_name">Event name</label>
+                <input class="form-control" id="event_name" name="event_name" value="@values[0]" maxlength="150" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" for="event_date">Date and time</label>
+                <input class="form-control" type="datetime-local" id="event_date" name="event_date" value="@values[2]" />
+            </div>
+
+            <div class="col-12">
+                <label class="form-label" for="event_description">Description</label>
+                <textarea class="form-control" id="event_description" name="event_description" rows="3">@values[1]</textarea>
+            </div>
+
+            <div class="col-md-5">
+                <label class="form-label" for="event_location">Location</label>
+                <input class="form-control" id="event_location" name="event_location" value="@values[3]" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label" for="distance">Distance (km)</label>
+                <input class="form-control" id="distance" name="distance" value="@values[4]" placeholder="e.g. 21.1" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label" for="event_type">Race type</label>
+                <select class="form-select" id="event_type" name="event_type">
+                    @foreach (string type in types)
+                    {
+                        <option value="@type" selected="@(values[5] == type)">@type</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" for="event_status">Status</label>
+                <select class="form-select" id="event_status" name="event_status">
+                    @foreach (string status in statuses)
+                    {
+                        <option value="@status" selected="@(values[6] == status)">@status</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        <div class="mt-4 d-flex gap-2">
+            <button type="submit" class="btn rd-btn">@(is_edit ? "Save changes" : "Create event")</button>
+            <a class="btn btn-outline-secondary" asp-controller="Organizer" asp-action="Events">Cancel</a>
+        </div>
+    </form>
+</div>

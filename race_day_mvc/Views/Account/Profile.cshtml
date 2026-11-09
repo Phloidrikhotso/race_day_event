@@ -1,0 +1,64 @@
+﻿@{
+    ViewData["Title"] = "My profile";
+
+    string[] profile = ViewBag.profile;
+    string avatar_url = ViewBag.avatar_url;
+
+    string? role = Context.Session.GetString("role");
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card rd-card p-4">
+
+            <div class="d-flex align-items-center mb-4">
+                <img class="profile-avatar me-3" src="@avatar_url" alt="Your picture" />
+                <div>
+                    <h2 class="rd-title mb-0">@profile[0] @profile[1]</h2>
+                    <span class="text-muted">@role</span>
+                </div>
+            </div>
+
+            @if (ViewBag.message != null)
+            {
+                <div class="alert alert-danger">@ViewBag.message</div>
+            }
+
+            <form method="post" asp-controller="Account" asp-action="Profile">
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="first_name">First name</label>
+                        <input class="form-control" id="first_name" name="first_name" value="@profile[0]" required />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="last_name">Last name</label>
+                        <input class="form-control" id="last_name" name="last_name" value="@profile[1]" required />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="username">Username</label>
+                        <input class="form-control" id="username" name="username" value="@profile[2]" required />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="phone_number">Phone number</label>
+                        <input class="form-control" id="phone_number" name="phone_number" value="@profile[4]" />
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="email">Email</label>
+                    <input class="form-control" type="email" id="email" name="email" value="@profile[3]" required />
+                </div>
+
+                <div class="mb-4">
+                     <a class="btn rd-btn-outline" asp-controller="Account" asp-action="ChoosePicture">Change picture</a>
+                </div>
+
+                <button type="submit" class="btn rd-btn w-100">Save changes</button>
+            </form>
+        </div>
+    </div>
+</div>
