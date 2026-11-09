@@ -238,7 +238,7 @@ The GitHub Actions workflow in `.github/workflows/main.yml` runs on every push t
 
 ## Video
 
-[Part 3 demo (unlisted YouTube)](PASTE-LINK-HERE)
+https://youtu.be/vrq6R2tPrng
 
 ## Documentation
 
