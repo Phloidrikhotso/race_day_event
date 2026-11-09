@@ -1,0 +1,60 @@
+﻿@model List<string[]>
+@{
+    ViewData["Title"] = "My enrolments";
+}
+
+<h1 class="rd-title mb-1">My enrolments</h1>
+<p class="text-muted mb-4">Your race number is on your bib card. Keep it handy, you will need it when you collect your race pack.</p>
+
+@if (ViewBag.message != null)
+{
+    <div class="alert alert-danger">@ViewBag.message</div>
+}
+
+@if (Model.Count == 0 && ViewBag.message == null)
+{
+    <div class="card rd-card p-4">
+        <p>You have not entered any events yet.</p>
+        <div><a class="btn rd-btn" asp-controller="Home" asp-action="Index">Browse events</a></div>
+    </div>
+}
+else if (Model.Count > 0)
+{
+    @foreach (string[] row in Model)
+    {
+        bool cancelled = row[5] == "Cancelled";
+
+        <div class="card rd-card p-3 mb-3">
+            <div class="row align-items-center g-3">
+                <div class="col-auto">
+                    <div class="rd-bib@(cancelled ? " rd-bib-cancelled" : "")">
+                        <div class="rd-bib-brand" title="@row[1]">@row[1]</div>
+                        <div class="rd-bib-number">@(string.IsNullOrEmpty(row[6]) ? "-" : row[6])</div>
+                        <div class="rd-bib-type">@row[3]</div>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <h5 class="rd-title mb-1">@row[1]</h5>
+                    <p class="text-muted mb-1">@row[2]</p>
+                    <p class="small mb-2">Entered on @row[4]</p>
+                    <span class="status-badge status-@(row[5].ToLower())">@row[5]</span>
+                    @if (cancelled)
+                    {
+                        <span class="small text-muted ms-2">This race number will not be given to anyone else.</span>
+                    }
+                </div>
+
+                <div class="col-auto">
+                    @if (!cancelled)
+                    {
+                        <form method="post" asp-controller="Participant" asp-action="Cancel" asp-route-id="@row[0]"
+                              onsubmit="return confirm('Cancel this enrolment?');">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">Cancel</button>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+}
