@@ -1,0 +1,84 @@
+﻿@model List<string[]>
+@functions {
+    // Removes the extra zeros from a distance such as 10.000
+    string tidy(string number)
+    {
+        if (!number.Contains('.') && !number.Contains(','))
+        {
+            return number;
+        }
+
+        return number.TrimEnd('0').TrimEnd('.', ',');
+    }
+}
+@{
+    string[] ev = ViewBag.event_details;
+
+    ViewData["Title"] = ev[1];
+
+    bool is_open = ev[7] == "Open";
+}
+
+<a asp-controller="Home" asp-action="Index" class="d-inline-block mb-3">&larr; Back to events</a>
+
+<div class="card rd-card p-4 mb-4">
+    <div class="d-flex justify-content-between align-items-start flex-wrap">
+        <div>
+            <h1 class="rd-title">@ev[1]</h1>
+            <p class="text-muted mb-1">@ev[3]</p>
+        </div>
+        <span class="type-badge type-@(ev[6].ToLower())">@ev[6]</span>
+    </div>
+
+    <hr />
+
+    <div class="row">
+        <div class="col-md-4"><strong>Location</strong><br />@ev[4]</div>
+        <div class="col-md-4"><strong>Distance</strong><br />@tidy(ev[5]) km</div>
+        <div class="col-md-4"><strong>Status</strong><br />@ev[7]</div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(ev[2]))
+    {
+        <p class="mt-3 mb-0">@ev[2]</p>
+    }
+</div>
+
+<h3 class="rd-title mb-3">Categories</h3>
+
+@if (!is_open)
+{
+    <div class="alert alert-warning">This event is not open for enrolment right now.</div>
+}
+
+@if (Model.Count == 0)
+{
+    <div class="alert alert-info">The organizer has not added categories for this event yet.</div>
+}
+else
+{
+    <div class="row">
+        @foreach (string[] category in Model)
+        {
+            <div class="col-md-4 mb-3">
+                <div class="card rd-card h-100 p-3">
+                    <h5 class="rd-title">@category[1]</h5>
+                    <p class="mb-1">Entry fee: @("R" + category[2])</p>
+
+                    @if (!string.IsNullOrWhiteSpace(category[3]))
+                    {
+                        <p class="mb-1">Distance: @tidy(category[3]) km</p>
+                    }
+
+                    <p class="mb-3">Max participants: @category[4]</p>
+
+                    @if (is_open)
+                    {
+                        <a class="btn rd-btn w-100 mt-auto" asp-controller="Participant" asp-action="EntryForm"
+                           asp-route-event_id="@ev[0]" asp-route-category_id="@category[0]">Enter this category</a>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}

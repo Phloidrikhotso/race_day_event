@@ -1,0 +1,108 @@
+﻿@{
+    ViewData["Title"] = "Race entry";
+
+    string[] values = ViewBag.entry_values;
+
+    string[] sizes = { "XS", "S", "M", "L", "XL", "2XL", "3XL" };
+}
+
+<a asp-controller="Participant" asp-action="Details" asp-route-id="@ViewBag.event_id" class="d-inline-block mb-3">&larr; Back to the event</a>
+
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card rd-card p-4">
+
+            <h1 class="rd-title mb-1">Race entry</h1>
+            <p class="mb-1"><strong>@ViewBag.event_name</strong> &middot; @ViewBag.event_date</p>
+            <p class="text-muted">Category: @ViewBag.category_text &middot; Entry fee: R@(ViewBag.entry_fee)</p>
+
+            @if (ViewBag.message != null)
+            {
+                <div class="alert alert-danger">@ViewBag.message</div>
+            }
+
+            <form method="post" asp-controller="Participant" asp-action="Enrol">
+                <input type="hidden" name="event_id" value="@ViewBag.event_id" />
+                <input type="hidden" name="category_id" value="@ViewBag.category_id" />
+
+                <h5 class="rd-form-heading">Emergency contact</h5>
+                <p class="text-muted small">Someone the race medics can call if there is an emergency during the race.</p>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label" for="emergency_contact_name">Full name</label>
+                        <input class="form-control" id="emergency_contact_name" name="emergency_contact_name" value="@values[0]" maxlength="100" required />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="emergency_contact_relationship">Relationship to you</label>
+                        <input class="form-control" id="emergency_contact_relationship" name="emergency_contact_relationship" value="@values[1]"
+                               list="relationships" maxlength="50" placeholder="e.g. Mother" required />
+                        <datalist id="relationships">
+                            <option value="Mother"></option>
+                            <option value="Father"></option>
+                            <option value="Partner"></option>
+                            <option value="Spouse"></option>
+                            <option value="Sibling"></option>
+                            <option value="Child"></option>
+                            <option value="Friend"></option>
+                        </datalist>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="emergency_contact_phone">Phone number</label>
+                        <input class="form-control" type="tel" id="emergency_contact_phone" name="emergency_contact_phone" value="@values[2]" maxlength="30" required />
+                    </div>
+                </div>
+
+                <h5 class="rd-form-heading">Medical notes <span class="text-muted fw-normal">(optional)</span></h5>
+                <p class="text-muted small">Allergies, conditions or medication the race medics should know about. Leave it empty if there is nothing to add.</p>
+                <div class="mb-4">
+                    <textarea class="form-control" id="medical_notes" name="medical_notes" rows="3" maxlength="500">@values[3]</textarea>
+                </div>
+
+                <h5 class="rd-form-heading">Race pack</h5>
+                <p class="text-muted small">Your address and T-shirt size are used for your race pack (shirt, backpack, socks, arm covers and bottle caps).</p>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label" for="address_street">Street address</label>
+                        <input class="form-control" id="address_street" name="address_street" value="@values[4]" maxlength="200" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" for="address_city">Suburb or city</label>
+                        <input class="form-control" id="address_city" name="address_city" value="@values[5]" maxlength="100" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" for="address_postal_code">Postal code</label>
+                        <input class="form-control" id="address_postal_code" name="address_postal_code" value="@values[6]"
+                               inputmode="numeric" maxlength="4" pattern="[0-9]{4}" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" for="tshirt_size">T-shirt size</label>
+                        <select class="form-select" id="tshirt_size" name="tshirt_size" required>
+                            <option value="">Choose a size...</option>
+                            @foreach (string size in sizes)
+                            {
+                                <option value="@size" selected="@(values[7] == size)">@size</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-check mb-4">
+                    <input class="form-check-input" type="checkbox" id="indemnity_accepted" name="indemnity_accepted" value="true" required />
+                    <label class="form-check-label" for="indemnity_accepted">
+                        I understand that taking part in this race carries risks and I enter at my own risk. I confirm that
+                        my details are correct and that I am fit to take part.
+                    </label>
+                </div>
+
+                <p class="text-muted small">
+                    Your emergency contact, medical notes and address are only shared with the organizer of this event.
+                </p>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn rd-btn btn-lg">Confirm my entry</button>
+                    <a class="btn btn-outline-secondary btn-lg" asp-controller="Participant" asp-action="Details" asp-route-id="@ViewBag.event_id">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
