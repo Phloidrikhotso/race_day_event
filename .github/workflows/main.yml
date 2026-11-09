@@ -17,12 +17,6 @@ jobs:
       - name: Check out the code
         uses: actions/checkout@v4
 
-      - name: Debug checkout
-        run: |
-          git log --oneline -1
-          ls -la
-          ls -la race_day_mvc
-
       # Both SDKs are installed so the test project builds whichever version it targets
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
