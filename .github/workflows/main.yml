@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, part3 ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, part3 ]
 
 permissions:
   contents: read
@@ -17,6 +17,12 @@ jobs:
       - name: Check out the code
         uses: actions/checkout@v4
 
+      - name: Debug checkout
+        run: |
+          git log --oneline -1
+          ls -la
+          ls -la race_day_mvc
+
       # Both SDKs are installed so the test project builds whichever version it targets
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
@@ -28,10 +34,14 @@ jobs:
       - name: Restore packages
         run: |
           dotnet restore race_day_event.csproj
+          dotnet restore race_day_mvc/race_day_mvc.csproj
           dotnet restore TestProject1/TestProject1.csproj
 
       - name: Build the API
         run: dotnet build race_day_event.csproj --configuration Release --no-restore
+
+      - name: Build the MVC application
+        run: dotnet build race_day_mvc/race_day_mvc.csproj --configuration Release --no-restore
 
       - name: Run the unit tests
         run: dotnet test TestProject1/TestProject1.csproj --configuration Release --no-restore --logger "console;verbosity=normal"
