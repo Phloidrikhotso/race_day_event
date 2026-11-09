@@ -1,5 +1,6 @@
 --creating database
 create database raceday;
+
 --using database raceday_event
 use raceday;
 
@@ -74,11 +75,26 @@ event_id int not null,
 category_id int not null,
 enrolment_date datetime default getdate(),
 enrolment_status varchar(25) not null default 'Confirmed',
+race_number int null,
+emergency_contact_name varchar(100) null,
+emergency_contact_relationship varchar(50) null,
+emergency_contact_phone varchar(30) null,
+medical_notes varchar(500) null,
+address_street varchar(200) null,
+address_city varchar(100) null,
+address_postal_code varchar(10) null,
+tshirt_size varchar(5) null,
+indemnity_accepted bit not null default 0,
+pack_collected bit not null default 0,
 check (enrolment_status in ('Confirmed', 'Cancelled', 'Pending')),
+check (tshirt_size is null or tshirt_size in ('XS', 'S', 'M', 'L', 'XL', '2XL', '3XL')),
 foreign key(userID) references users(userID),
 foreign key(event_id) references event(event_id),
 foreign key(category_id) references category(category_id)
 );
+
+--a race number can only be used once in an event
+create unique index ux_enrolment_race_number on enrolment(event_id, race_number) where race_number is not null;
 
 --creating table results
 create table results
@@ -140,3 +156,4 @@ select * from enrolment;
 
 
 select * from results;
+
