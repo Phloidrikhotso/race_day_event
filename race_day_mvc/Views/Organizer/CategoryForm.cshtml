@@ -1,0 +1,87 @@
+﻿@{
+    string mode = ViewBag.mode;
+    string[] values = ViewBag.category_values;
+    string? event_id = ViewBag.event_id;
+    string? category_id = ViewBag.category_id;
+    string? event_name = ViewBag.event_name;
+
+    bool is_edit = mode == "Edit";
+
+    ViewData["Title"] = is_edit ? "Edit category" : "Add category";
+
+    string[] types = { "Run", "Walk", "Cycle" };
+}
+
+<a asp-controller="Organizer" asp-action="Categories" asp-route-event_id="@event_id" class="d-inline-block mb-3">&larr; Back to categories</a>
+
+<div class="card rd-card p-4">
+    <h1 class="rd-title mb-1">@(is_edit ? "Edit category" : "Add category")</h1>
+
+    @if (!string.IsNullOrWhiteSpace(event_name))
+    {
+        <p class="text-muted mb-3">Event: @event_name</p>
+    }
+
+    @if (ViewBag.message != null)
+    {
+        <div class="alert alert-danger">@ViewBag.message</div>
+    }
+
+    <form method="post" asp-controller="Organizer" asp-action="@(is_edit ? "EditCategory" : "CreateCategory")"
+          asp-route-id="@category_id" asp-route-event_id="@event_id">
+        <div class="row g-3">
+             <div class="col-12">
+                <label class="form-label" for="distance_preset">Quick pick a distance</label>
+                <select class="form-select" id="distance_preset">
+                    <option value="">Choose a common distance, or type your own below...</option>
+                    <option value="5">5 km</option>
+                    <option value="10">10 km</option>
+                    <option value="21.1">21.1 km - Half marathon</option>
+                    <option value="42.2">42.2 km - Marathon</option>
+                    <option value="50">50 km - Ultra</option>
+                    <option value="100">100 km - Ultra</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" for="category_name">Type</label>
+                <select class="form-select" id="category_name" name="category_name">
+                    @foreach (string type in types)
+                    {
+                        <option value="@type" selected="@(values[0] == type)">@type</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" for="race_distance">Distance (km)</label>
+                <input class="form-control" id="race_distance" name="race_distance" value="@values[2]" placeholder="e.g. 10 (optional)" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" for="entry_fee">Entry fee (R)</label>
+                <input class="form-control" id="entry_fee" name="entry_fee" value="@values[1]" placeholder="0 for free" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" for="max_participants">Max participants</label>
+                <input class="form-control" id="max_participants" name="max_participants" value="@values[3]" />
+            </div>
+        </div>
+
+        <div class="mt-4 d-flex gap-2">
+            <button type="submit" class="btn rd-btn">@(is_edit ? "Save changes" : "Add category")</button>
+            @if (!is_edit)
+            {
+                <button type="submit" name="add_another" value="yes" class="btn btn-outline-primary">Save and add another</button>
+            }
+            <a class="btn btn-outline-secondary" asp-controller="Organizer" asp-action="Categories" asp-route-event_id="@event_id">Cancel</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById("distance_preset").addEventListener("change", function () {
+            if (this.value !== "") {
+                document.getElementById("race_distance").value = this.value;
+            }
+        });
+    </script>
+}
