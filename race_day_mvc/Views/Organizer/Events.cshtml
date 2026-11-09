@@ -1,0 +1,70 @@
+﻿@model List<string[]>
+@{
+    ViewData["Title"] = "My events";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="rd-title mb-0">My events</h1>
+    <a class="btn rd-btn" asp-controller="Organizer" asp-action="CreateEvent">Create event</a>
+    
+</div>
+
+@if (ViewBag.message != null)
+{
+    <div class="alert alert-danger">@ViewBag.message</div>
+}
+
+@if (Model.Count == 0 && ViewBag.message == null)
+{
+    <div class="card rd-card p-4">
+        <p>You have not created any events yet.</p>
+        <div><a class="btn rd-btn" asp-controller="Organizer" asp-action="CreateEvent">Create your first event</a></div>
+    </div>
+}
+else if (Model.Count > 0)
+{
+    <div class="card rd-card p-3">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Date</th>
+                        <th>Location</th>
+                        <th>Distance</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Enrolments</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (string[] ev in Model)
+                    {
+                        <tr>
+                            <td>@ev[1]</td>
+                            <td>@ev[3]</td>
+                            <td>@ev[4]</td>
+                            <td>@ev[5] km</td>
+                            <td><span class="type-badge type-@(ev[6].ToLower())">@ev[6]</span></td>
+                            <td><span class="status-badge status-@(ev[7].ToLower())">@ev[7]</span></td>
+                            <td>@ev[8]</td>
+                            <td class="text-end">
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <a class="btn btn-outline-secondary btn-sm" asp-controller="Organizer" asp-action="EditEvent" asp-route-id="@ev[0]">Edit</a>
+                                    <a class="btn btn-outline-primary btn-sm" asp-controller="Organizer" asp-action="Categories" asp-route-event_id="@ev[0]">Categories</a>
+                                    <a class="btn btn-outline-primary btn-sm" asp-controller="Organizer" asp-action="Enrolments" asp-route-event_id="@ev[0]">Enrolments</a>
+                                    <a class="btn btn-outline-primary btn-sm" asp-controller="Organizer" asp-action="Results" asp-route-event_id="@ev[0]">Results</a>
+                                    <form method="post" asp-controller="Organizer" asp-action="DeleteEvent" asp-route-id="@ev[0]"
+                                          onsubmit="return confirm('Delete this event?');">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
